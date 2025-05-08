@@ -1,15 +1,54 @@
 steps:
-  - name: 'node:18'
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        npm install
-        npm run build
-
+  # 1. 이미지 빌드: 난독화 및 최소화 포함
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t', 'gcr.io/$PROJECT_ID/hymn:$COMMIT_SHA',
+      '--no-cache',  # 캐시 사용 안 함
+      '--build-arg', 'BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")',  # 빌드 시간 변수
+      '.'
+    ]
+    id: 'build-image'
+  
+  # 2. 빌드된 이미지를 비공개 Container Registry에 푸시
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/hymn:$COMMIT_SHA']
+    id: 'push-image'
+  
+  # 3. Cloud Run에 배포
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        gsutil -m rsync -r ./build gs://electric-pwa-bucket
+    entrypoint: 'gcloud'
+    args: [
+      'run',
+      'deploy',
+      'hymn',  # 서비스 이름
+      '--image', 'gcr.io/$PROJECT_ID/hymn:$COMMIT_SHA',
+      '--region', 'asia-northeast3',  # 서울 리전(필요시 변경)
+      '--platform', 'managed',
+      '--allow-unauthenticated',  # 공개 접근 허용
+      '--set-env-vars', 'COMMIT_SHA=$COMMIT_SHA,BUILD_TIME=$BUILD_DATE',  # 빌드 정보 환경 변수
+      '--cpu', '1',
+      '--memory', '256Mi',
+      '--concurrency', '80'
+    ]
+    id: 'deploy-cloud-run'
+    
+  # 4. 이미지에 대한 취약점 스캔 실행
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: [
+      'artifacts', 'docker', 'images', 'scan',
+      'gcr.io/$PROJECT_ID/hymn:$COMMIT_SHA',
+      '--format=json'
+    ]
+    id: 'vulnerability-scan'
+
+# 이미지 태그 지정
+images:
+  - 'gcr.io/$PROJECT_ID/hymn:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/hymn:latest'
+
+# 빌드 옵션: 비공개 풀에서 빌드, 로그 암호화 활성화
+options:
+  logging: CLOUD_LOGGING_ONLY
+  pool:
+    name: 'projects/$PROJECT_ID/locations/asia-northeast3/workerPools/private-pool'  # 비공개 빌드 풀 사용 (사전 생성 필요)
