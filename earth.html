@@ -1,0 +1,3012 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>접지시스템 설계 계산기</title>
+    <style>
+        /* 접지시스템 설계 계산기 스타일 */
+body {
+    font-family: 'Arial', sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f5f5;
+    padding-top: 70px; /* 헤더 고정을 위한 상단 패딩 */
+    padding-bottom: 80px; /* 하단 버튼 영역 확보 */
+}
+.calculator {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+h1, h2, h3 {
+    color: #333;
+}
+h1 {
+    margin: 0;
+    font-size: 24px;
+}
+h2 {
+    margin: 30px 0 15px;
+    font-size: 20px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+}
+h3 {
+    margin: 20px 0 10px;
+    font-size: 18px;
+}
+
+.home-btn {
+      flex: none;
+      width: auto;
+      height: auto;
+      background: #var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: inline-flex;
+      align-items: center;
+      margin: 0;
+    }
+    .home-btn svg {
+      margin-right: 5px;
+    }
+    .home-btn:hover { background: #155ec2; }
+
+.input-group {
+    margin-bottom: 15px;
+}
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+input, select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+.fixed-bottom {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+.btn-container {
+    display: flex;
+    gap: 10px;
+    margin: 0 auto;
+    max-width: 800px;
+    padding: 0 20px;
+}
+button {
+    flex: 1;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px 0;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+button:hover {
+    background-color: #45a049;
+}
+button.reset {
+    background-color: #f44336;
+}
+button.reset:hover {
+    background-color: #d32f2f;
+}
+.result-section {
+    background-color: #e8f5e9;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 20px;
+    display: none; /* 초기에는 숨김 */
+}
+.calculator-section {
+    margin-bottom: 30px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    background-color: #fafafa;
+}
+.info {
+    background-color: #e3f2fd;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+.info h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #0d47a1;
+}
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+.form-col {
+    flex: 1;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+th {
+    background-color: #f2f2f2;
+}
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+.result-highlight {
+    font-weight: bold;
+    color: #2e7d32;
+    font-size: 16px;
+}
+.arrangement-diagram {
+    margin: 20px 0;
+    padding: 0; /* 패딩 제거 */
+    border: 1px dashed #aaa;
+    border-radius: 5px;
+    text-align: center;
+    overflow: hidden; /* 넘치는 부분 숨김 */
+}
+.arrangement-diagram svg {
+    display: block; /* 블록 요소로 변경 */
+    margin: 0; /* 마진 제거 */
+    width: 100%; /* 너비 100%로 설정 */
+    height: auto; /* 높이 자동 조정 */
+}
+.arrangement-diagram p {
+    margin: 15px 0; /* 텍스트만 있을 때 마진 추가 */
+}
+.dimensions-info {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #0d47a1;
+}
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    border-bottom: 1px dotted #666;
+}
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+.rod-types {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+}
+.rod-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+.rod-item:last-child {
+    border-bottom: none;
+}
+.rod-info {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.rod-spec-select {
+    flex-grow: 1;
+    max-width: 60%;
+}
+.rod-count {
+    width: 70px;
+    margin: 0 10px;
+}
+.rod-action {
+    margin-left: 10px;
+}
+.rod-action button {
+    background-color: #f44336;
+    padding: 5px 10px;
+    font-size: 12px;
+}
+.add-rod {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+}
+.add-rod:hover {
+    background-color: #45a049;
+}
+.suggestion-box {
+    background-color: #fff9c4;
+    border: 1px solid #ffd600;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 15px 0;
+}
+.suggestion-box h4 {
+    color: #f57f17;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+.suggestion-box button {
+    background-color: #ffc107;
+    color: #333;
+    margin-top: 10px;
+}
+.suggestion-box button:hover {
+    background-color: #ffb300;
+}
+/* 반응형 디자인을 위한 미디어 쿼리 */
+@media (max-width: 600px) {
+    .form-row {
+        flex-direction: column;
+    }
+    .header-content {
+        flex-direction: row;
+        gap: 10px;
+    }
+    .header h1 {
+        font-size: 18px;
+    }
+    body {
+        padding-top: 0px;
+    }
+    .rod-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .rod-spec-select {
+        max-width: 100%;
+    }
+}
+/* 다이어그램 스타일 */
+.rod-point {
+    fill: #4CAF50;
+    stroke: #2E7D32;
+    stroke-width: 1;
+}
+.rod-text {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    fill: #333;
+}
+.diagram-line {
+    stroke: #333;
+    stroke-width: 1.5;
+}
+.diagram-grid {
+    stroke: #ccc;
+    stroke-width: 1;
+    stroke-dasharray: 4;
+}
+
+/* 탭 스타일 */
+.tabs-container {
+    margin-bottom: 20px;
+}
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+    overflow-x: auto; /* 모바일에서 가로 스크롤 가능하게 */
+}
+.tab {
+    padding: 10px 15px;
+    background-color: #f2f2f2;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-radius: 5px 5px 0 0;
+    margin-right: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #555;
+    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+}
+.tab.active {
+    background-color: white;
+    color: #3f51b5;
+    border-bottom: 2px solid #3f51b5;
+    margin-bottom: -1px;
+}
+.tab-content {
+    display: none;
+    padding: 20px 0;
+}
+.tab-content.active {
+    display: block;
+}
+
+/* KEC 기준 탭 스타일 */
+.search-box {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+.search-input {
+    flex-grow: 1;
+}
+.search-btn {
+    flex-grow: 0;
+    white-space: nowrap;
+    padding: 10px 15px;
+}
+.kec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    font-size: 14px;
+}
+.kec-table th {
+    background-color: #3f51b5;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+}
+.kec-cat {
+    background-color: #e8eaf6;
+    font-weight: bold;
+}
+.kec-table td, .kec-table th {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+.highlight-row {
+    background-color: #fff9c4 !important;
+}
+.kec-method {
+    margin-top: 30px;
+    padding: 15px;
+    background-color: #f1f8e9;
+    border-radius: 5px;
+    border-left: 4px solid #689f38;
+}
+.kec-method h3 {
+    color: #33691e;
+    margin-top: 0;
+}
+.kec-method-section {
+    margin-bottom: 20px;
+}
+.kec-method-img {
+    width: 100%;
+    max-width: 600px;
+    margin: 15px auto;
+    display: block;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+.note-box {
+    background-color: #fff3e0;
+    border-left: 4px solid #ff9800;
+    padding: 10px 15px;
+    margin: 15px 0;
+    font-size: 14px;
+}
+.sticky-header {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 100;
+      padding: 10px 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+
+    </style>
+</head>
+<body>
+    <!-- 고정된 헤더 -->
+    <div class="sticky-header">
+    <button class="home-btn" onclick="goBack()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      홈으로
+    </button>
+    <div class="headers" style="font-size: 30px; font-weight: bold; color: #45a049;">접지 시스템 계산기</div>
+  </div>
+    
+    <div class="calculator">
+        <!-- 탭 메뉴 추가 -->
+        <div class="tabs-container">
+            <div class="tabs">
+                <div class="tab active" data-tab="calculator-tab">접지 계산기</div>
+                <div class="tab" data-tab="kec-standards-tab">KEC 접지공사 기준</div>
+                <div class="tab" data-tab="construction-methods-tab">시공방법</div>
+            </div>
+        </div>
+        
+        <!-- 계산기 탭 내용 -->
+        <div class="tab-content active" id="calculator-tab">
+            <div class="info">
+                <h3>접지시스템 설계 정보</h3>
+                <p>이 계산기는 주어진 토양 저항률과 목표 접지저항을 바탕으로 필요한 접지봉 개수와 구성을 계산합니다. 
+                단독접지 및 혼합 접지시스템 설계에 도움이 됩니다.</p>
+            </div>
+            
+            <div class="calculator-section">
+                <h2>입력 정보</h2>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="input-group">
+                            <label for="soil-type">토양 유형 선택</label>
+                            <select id="soil-type" class="live-input">
+                                <option value="">직접 입력</option>
+                                <option value="5">습한 유기질 토양 (5 Ω·m)</option>
+                                <option value="100">점토, 습한 황토 (100 Ω·m)</option>
+                                <option value="200">습한 모래 (200 Ω·m)</option>
+                                <option value="500">건조한 모래, 자갈 (500 Ω·m)</option>
+                                <option value="1000">건조한 돌, 콘크리트 (1,000 Ω·m)</option>
+                                <option value="3000">암석 지역 (3,000 Ω·m)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="input-group">
+                            <label for="soil-resistivity">토양 저항률 (Ω·m)</label>
+                            <input type="number" id="soil-resistivity" placeholder="예: 100" step="1" min="0" class="live-input">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="input-group">
+                            <label for="target-resistance">목표 접지저항 (Ω)</label>
+                            <input type="number" id="target-resistance" placeholder="예: 10" step="0.1" min="0" class="live-input">
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="suggestions-container">
+                    <!-- 자동 추천 제안이 여기에 표시됩니다 -->
+                </div>
+                
+                <h3>접지 시스템 구성</h3>
+                <div class="rod-types" id="rod-list">
+                    <!-- 접지봉 목록은 자바스크립트로 동적 생성됩니다 -->
+                    <p>접지시스템에 접지봉이 없습니다. 아래 버튼을 눌러 접지봉을 추가하세요.</p>
+                </div>
+                
+                <button class="add-rod" id="add-rod-btn">+ 접지봉 추가</button>
+                
+                <h3>접지봉 배치 구성</h3>
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="input-group">
+                            <label for="rod-spacing">접지봉 간격 (m)</label>
+                            <input type="number" id="rod-spacing" placeholder="예: 3" step="0.1" min="0" value="3" class="live-input">
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="input-group">
+                            <label for="arrangement-type">배치 패턴</label>
+                            <select id="arrangement-type" class="live-input">
+                                <option value="line">직선 배열</option>
+                                <option value="ring">원형 배열</option>
+                                <option value="grid">그리드 배열</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="result-section" id="result-section">
+                <h2>계산 결과</h2>
+                
+                <div class="calculator-section">
+                    <h3>단일 접지봉 저항</h3>
+                    <div id="individual-resistances">
+                        <!-- 개별 접지봉 저항값 표시 영역 -->
+                    </div>
+                    
+                    <h3>목표 접지저항을 달성하기 위한 접지봉 요구사항</h3>
+                    <p>목표 접지저항(<span id="target-resistance-display"></span> Ω)을 달성하기 위해 필요한 최소 접지봉 개수: <span id="required-rods-count" class="result-highlight">0</span> 개</p>
+                    
+                    <h3>접지봉 배치 구성</h3>
+                    <p id="arrangement-description"></p>
+                    
+                    <div class="arrangement-diagram" id="arrangement-diagram">
+                        <p>유효한 값을 입력하세요</p>
+                    </div>
+                    
+                    <div class="dimensions-info" id="dimensions-info"></div>
+                    
+                    <h3>시공 권장사항</h3>
+                    <div id="recommendations">
+                        <!-- 권장사항들이 여기에 추가됩니다 -->
+                    </div>
+                    
+                    <h3>예상 총 접지저항</h3>
+                    <p>제안된 구성의 예상 총 접지저항: <span id="expected-resistance" class="result-highlight">0</span> Ω</p>
+                    
+                    <table id="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>접지봉 개수</th>
+                                <th>예상 접지저항 (Ω)</th>
+                                <th>목표 달성 여부</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 비교표가 여기에 추가됩니다 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- KEC 접지공사 기준 탭 내용은 다음 코드에서 제공됩니다 -->
+<!-- KEC 접지공사 기준 탭 내용 -->
+<div class="tab-content" id="kec-standards-tab">
+    <div class="info">
+        <h3>KEC 접지공사 기준 정보</h3>
+        <p>한국전기설비기술기준(KEC)에 따른 다양한 시설별 접지저항 기준값과 접지 유형을 확인할 수 있습니다. 설비 유형에 맞는 기준값을 참고하여 접지시스템을 설계하세요.</p>
+    </div>
+    
+    <div class="search-box">
+        <input type="text" id="kec-search" class="search-input" placeholder="시설 유형 또는 접지저항 값으로 검색">
+        <button id="kec-search-btn" class="search-btn">검색</button>
+    </div>
+    
+    <table class="kec-table" id="kec-standards-table">
+        <thead>
+            <tr>
+                <th>분류</th>
+                <th>설비유형</th>
+                <th>접지 종류</th>
+                <th>접지저항 기준</th>
+                <th>비고</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="kec-cat">
+                <td colspan="5">전기설비</td>
+            </tr>
+            <tr>
+                <td>고압 및 특고압</td>
+                <td>변전소, 개폐소</td>
+                <td>제1종 접지</td>
+                <td>10Ω 이하</td>
+                <td>피뢰설비 겸용 시 5Ω 이하</td>
+            </tr>
+            <tr>
+                <td>저압전로</td>
+                <td>400V 미만 일반 전로</td>
+                <td>제3종 접지</td>
+                <td>100Ω 이하</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>저압전로</td>
+                <td>400V 이상 고압 혼촉 우려 전로</td>
+                <td>특별 제3종 접지</td>
+                <td>10Ω 이하</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>고압전로</td>
+                <td>고압 전기기기 외함, 철대</td>
+                <td>제2종 접지</td>
+                <td>KEC 접지기준에 따름 (일반적으로 10Ω)</td>
+                <td>접지선 굵기: 4mm² 이상</td>
+            </tr>
+            <tr>
+                <td>특수장소</td>
+                <td>병원 수술실, 중환자실</td>
+                <td>의료용 접지</td>
+                <td>1Ω 이하</td>
+                <td>등전위 본딩 필수</td>
+            </tr>
+            
+            <tr class="kec-cat">
+                <td colspan="5">피뢰설비</td>
+            </tr>
+            <tr>
+                <td>건축물</td>
+                <td>일반 건물 피뢰설비</td>
+                <td>피뢰 접지</td>
+                <td>10Ω 이하</td>
+                <td>KS C IEC 62305 기준</td>
+            </tr>
+            <tr>
+                <td>위험물 시설</td>
+                <td>폭발위험장소 피뢰설비</td>
+                <td>피뢰 접지</td>
+                <td>5Ω 이하</td>
+                <td>등전위 본딩 필수</td>
+            </tr>
+            
+            <tr class="kec-cat">
+                <td colspan="5">정보통신설비</td>
+            </tr>
+            <tr>
+                <td>통신설비</td>
+                <td>통신기기, 교환기</td>
+                <td>통신접지</td>
+                <td>3Ω 이하</td>
+                <td>방송통신설비 기술기준에 따름</td>
+            </tr>
+            <tr>
+                <td>데이터센터</td>
+                <td>서버룸, IDC</td>
+                <td>장비 접지</td>
+                <td>1Ω 이하</td>
+                <td>TN-S 방식 권장</td>
+            </tr>
+            <tr>
+                <td>방송설비</td>
+                <td>라디오, TV 송신탑</td>
+                <td>통신접지</td>
+                <td>2Ω 이하</td>
+                <td>별도 접지망 구성</td>
+            </tr>
+            
+            <tr class="kec-cat">
+                <td colspan="5">특수설비</td>
+            </tr>
+            <tr>
+                <td>원자력설비</td>
+                <td>원자력발전소</td>
+                <td>통합접지</td>
+                <td>1Ω 이하</td>
+                <td>원자력안전위원회 기준 준수</td>
+            </tr>
+            <tr>
+                <td>철도설비</td>
+                <td>전철 설비</td>
+                <td>레일 접지</td>
+                <td>특수 기준 적용</td>
+                <td>누설전류 대책 필요</td>
+            </tr>
+            <tr>
+                <td>전자기기</td>
+                <td>반도체 공장, 정밀 전자기기</td>
+                <td>장비 접지</td>
+                <td>0.1~1Ω</td>
+                <td>노이즈 대책 필요</td>
+            </tr>
+            
+            <tr class="kec-cat">
+                <td colspan="5">접지 유형별 기준</td>
+            </tr>
+            <tr>
+                <td>제1종 접지</td>
+                <td>고압/특고압 전로 기기</td>
+                <td>A종 접지</td>
+                <td>10Ω 이하</td>
+                <td>접지선 굵기: 6mm² 이상</td>
+            </tr>
+            <tr>
+                <td>제2종 접지</td>
+                <td>고압/특고압 전기기기 외함</td>
+                <td>B종 접지</td>
+                <td>계산값 (일반적으로 10Ω)</td>
+                <td>접지선 굵기: 4mm² 이상</td>
+            </tr>
+            <tr>
+                <td>제3종 접지</td>
+                <td>400V 미만 저압 기기 외함</td>
+                <td>C종 접지</td>
+                <td>100Ω 이하</td>
+                <td>접지선 굵기: 2.5mm² 이상</td>
+            </tr>
+            <tr>
+                <td>특별 제3종 접지</td>
+                <td>400V 이상 저압 기기 외함</td>
+                <td>특C종 접지</td>
+                <td>10Ω 이하</td>
+                <td>접지선 굵기: 4mm² 이상</td>
+            </tr>
+            <tr>
+                <td>통합 접지</td>
+                <td>전력, 통신, 피뢰 통합</td>
+                <td>공통 접지</td>
+                <td>설비 중 가장 낮은 저항값</td>
+                <td>등전위 본딩 필수</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <!-- KEC 규정에 따른 접지 저항값 계산식 -->
+    <div class="kec-method">
+        <h3>KEC 규정에 따른 접지 저항값 계산</h3>
+        
+        <div class="kec-method-section">
+            <h4>제2종 접지저항 계산식</h4>
+            <p>고압/특고압 기기의 외함 접지(B종 접지)의 경우, 다음 공식에 따라 계산된 저항값 이하로 시공해야 합니다:</p>
+            <ul>
+                <li>변압기 용량이 100kVA 이하: 변압기 중성점 최대 대지전압(V) ÷ 150</li>
+                <li>변압기 용량이 100kVA 초과 500kVA 이하: 변압기 중성점 최대 대지전압(V) ÷ 300</li>
+                <li>변압기 용량이 500kVA 초과: 변압기 중성점 최대 대지전압(V) ÷ 600</li>
+            </ul>
+            <p><b>예:</b> 380V/6.6kV 변압기(300kVA)의 경우, 중성점 최대 대지전압이 3.8kV라면</p>
+            <p>접지저항 = 3800V ÷ 300 = 12.67Ω 이하로 시공</p>
+        </div>
+        
+        <div class="note-box">
+            <p><b>참고:</b> 제2종 접지와 다른 접지가 혼용될 경우, 더 낮은 저항값을 기준으로 적용합니다. 예를 들어 제1종(10Ω)과 제2종(30Ω) 접지를 혼용할 경우 10Ω 이하로 시공해야 합니다.</p>
+        </div>
+    </div>
+    
+    <!-- 접지 공사 유형별 적용 사례 -->
+    <div class="kec-method">
+        <h3>접지 공사 유형별 적용 사례</h3>
+        
+        <div class="kec-method-section">
+            <h4>1. 건축물의 접지 시스템</h4>
+            <p>일반 건축물은 구조체를 이용한 접지극과 접지망을 구성하여 다음과 같이 접지합니다:</p>
+            <ul>
+                <li>구조물 기초 접지: 건물 기초 철근을 연결하여 접지망 구성</li>
+                <li>수직 접지봉: 지하수위가 높은 지역에 효과적</li>
+                <li>수평 접지극: 넓은 부지에 그물망 형태로 구성</li>
+            </ul>
+            <p><b>일반 건축물 목표 접지저항:</b> 10Ω 이하 (피뢰설비 겸용)</p>
+        </div>
+        
+        <div class="kec-method-section">
+            <h4>2. 변전소 접지 시스템</h4>
+            <p>변전소는 Touch & Step 전위와 대지전위상승(GPR)을 고려하여 접지망을 설계해야 합니다:</p>
+            <ul>
+                <li>메쉬 접지망: 변전소 전체 부지에 그리드 형태로 구성</li>
+                <li>통합 접지: 모든 전기설비를 동일 접지망에 연결</li>
+                <li>접지선 굵기: 일반적으로 60mm² 이상 사용</li>
+            </ul>
+            <p><b>변전소 목표 접지저항:</b> 1Ω 이하 (대규모 변전소), 5Ω 이하 (소규모 변전소)</p>
+        </div>
+        
+        <div class="kec-method-section">
+            <h4>3. 송전철탑 접지 시스템</h4>
+            <p>송전철탑은 뇌격 시 접지저항의 임피던스 특성이 중요합니다:</p>
+            <ul>
+                <li>각 철탑 다리마다 방사형 접지극 설치</li>
+                <li>저항률이 높은 지역에서는 약품처리 접지봉 활용</li>
+                <li>보강제를 사용하여 접지저항 저감</li>
+            </ul>
+            <p><b>송전철탑 목표 접지저항:</b> 10Ω 이하 (특고압), 20Ω 이하 (고압)</p>
+        </div>
+        
+        <div class="kec-method-section">
+            <h4>4. 전자통신설비 접지 시스템</h4>
+            <p>전자장비는 노이즈에 민감하므로 다음과 같은 접지 방식을 적용합니다:</p>
+            <ul>
+                <li>단일점 접지: 접지루프 방지 위한 스타형 접지</li>
+                <li>메쉬 접지: 고주파 노이즈 제거에 효과적</li>
+                <li>절연 접지선: 노이즈 유입 방지</li>
+            </ul>
+            <p><b>통신설비 목표 접지저항:</b> 3Ω 이하 (민감한 전자장비), 5Ω 이하 (일반 통신장비)</p>
+        </div>
+    </div>
+</div>
+
+
+        <!-- 접지공사 시공방법 탭 내용은 다음 코드에서 제공됩니다 -->
+<!-- 접지공사 시공방법 탭 내용 -->
+<div class="tab-content" id="construction-methods-tab">
+    <div class="info">
+        <h3>접지공사 시공방법 안내</h3>
+        <p>접지공사의 다양한 시공방법과 접지저항 저감 기술에 대한 정보를 제공합니다. 현장 조건에 맞는 적절한 접지공사 방법을 선택하여 최적의 접지시스템을 구축하세요.</p>
+    </div>
+    
+    <!-- 접지봉 시공 방법 -->
+    <div class="kec-method">
+        <h3>1. 접지봉(Rod) 시공 방법</h3>
+        
+        <div class="kec-method-section">
+            <h4>표준 접지봉 시공</h4>
+            <p>가장 일반적인 접지 방식으로, 구리봉이나 동도금 강봉을 지중에 수직으로 타입하는 방식입니다.</p>
+            <ul>
+                <li><b>시공 절차:</b>
+                    <ol>
+                        <li>접지봉 시공 위치 선정 및 표시</li>
+                        <li>전동해머 또는 드릴을 이용해 접지봉 타입</li>
+                        <li>접지선과 접지봉의 연결 (압착단자, 용접, 볼트 체결 등)</li>
+                        <li>접속부 방식처리 (아스팔트 또는 방식 테이프로 보호)</li>
+                        <li>성토 후 접지저항 측정</li>
+                    </ol>
+                </li>
+                <li><b>적합한 조건:</b> 일반 토양, 제한된 공간</li>
+                <li><b>장점:</b> 시공이 간편하고 비용이 저렴함</li>
+                <li><b>단점:</b> 심층 토양층까지 도달하기 어려움, 암반지역에서 시공 곤란</li>
+            </ul>
+        </div>
+        
+        <div class="kec-method-section">
+            <h4>심타 접지봉 시공</h4>
+            <p>여러 개의 접지봉을 연결하여 깊은 심도까지 타입하는 방식으로, 토양 저항률이 높은 지역에 효과적입니다.</p>
+            <ul>
+                <li><b>시공 절차:</b>
+                    <ol>
+                        <li>접지공 천공 (천공기 사용, 직경 100mm 내외)</li>
+                        <li>첫 번째 접지봉을 넣고 타격</li>
+                        <li>커플러를 이용해 두 번째 접지봉 연결 후 타격 (반복)</li>
+                        <li>원하는 심도까지 타입 후 접지선 연결</li>
+                        <li>접지공 내부를 저저항 접지보강제로 채움</li>
+                        <li>접지저항 측정</li>
+                    </ol>
+                </li>
+                <li><b>적합한 조건:</b> 토양 저항률이 높은 지역, 좁은 부지</li>
+                <li><b>장점:</b> 낮은 저항률의 심층 토양에 도달 가능, 좁은 공간에서도 낮은 접지저항 달성 가능</li>
+                <li><b>단점:</b> 시공비용이 상대적으로 높음, 심한 암반층에는 적용 어려움</li>
+            </ul>
+        </div>
+        
+        <div class="kec-method-section">
+            <h4>화학적 접지봉 시공</h4>
+            <p>접지봉 주변에 화학적 저감제를 채워 접지저항을 낮추는 방식입니다.</p>
+            <ul>
+                <li><b>시공 절차:</b>
+                    <ol>
+                        <li>접지공 천공 (직경 150-300mm)</li>
+                        <li>접지봉 위치 고정 및 설치</li>
+                        <li>접지보강제 (GEM, 벤토나이트 등) 충진</li>
+                        <li>접지선 연결 및 방식처리</li>
+                        <li>접지저항 측정</li>
+                    </ol>
+                </li>
+                <li><b>적합한 조건:</b> 매우 높은 토양 저항률, 건조한 지역</li>
+                <li><b>장점:</b> 접지저항을 크게 낮출 수 있음, 계절적 변화에 안정적</li>
+                <li><b>단점:</b> 시공비용이 높음, 정기적인 유지보수 필요</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- 접지판 및 매쉬 시공 방법 -->
+    <div class="kec-method">
+        <h3>2. 접지판 및 접지망(Mesh) 시공 방법</h3>
+        
+        <div class="kec-method-section">
+            <h4>수평 접지극 시공</h4>
+            <p>구리선이나 동테이프를 수평으로 매설하는 방식으로, 넓은 부지에 적합합니다.</p>
+            <ul>
+                <li><b>시공 절차:</b>
+                    <ol>
+                        <li>접지선 매설 위치 표시 및 트렌치 굴착 (깊이 0.75m 이상)</li>
+                        <li>트렌치 바닥에 접지선 포설</li>
+                        <li>필요 시 접지보강제 충진</li>
+                        <li>흙으로 되메우기 및 다짐</li>
+                        <li>접지저항 측정</li>
+                    </ol>
+                </li>
+                <li><b>적합한 조건:</b> 넓은 부지, 표층 토양 저항률이 낮은 지역</li>
+                <li><b>장점:</b> 시공이 상대적으로 쉬움, 넓은 면적 확보로 접지저항 감소</li>
+                <li><b>단점:</b> 넓은 부지 필요, 공간 제약이 있는 곳에는 적합하지 않음</li>
+            </ul>
+        </div>
+        
+        <div class="kec-method-section">
+            <h4>접지망(Mesh) 시공</h4>
+            <p>그리드 형태로 접지선을 배치하는 방식으로, 변전소나 대규모 시설에 적합합니다.</p>
+            <ul>
+                <li><b>시공 절차:</b>
+                    <ol>
+                        <li>부지 규모에 맞게 접지망 설계 (일반적으로 3-5m 간격의 그리드)</li>
+                        <li>트렌치 굴착 (깊이 0.75m 이상)</li>
+                        <li>그리드 형태로 접지선 포설</li>
+                        <li>교차점은 압착 또는 용접으로 확실히 접속</li>
+                        <li>수직 접지봉 보강 (필요 시)</li>
+                        <li>되메우기 및 다짐</li>
+                        <li>접지저항 측정</li>
+                    </ol>
+                </li>
+                <li><b>적합한 조건:</b> 변전소, 발전소, 대규모 산업시설</li>
+                <li><b>장점:</b> 낮은 접지저항, 접촉전압과 보폭전압 감소, 등전위 확보</li>
+                <li><b>단점:</b> 시공비용과 공간 요구사항이 큼</li>
+            </ul>
+        </div>
+        
+        <div class="kec-method-section">
+            <h4>구조체 접지 시공</h4>
+            <p>건물 기초의 철근을 접지극으로 활용하는 방식으로, 건축물에 효과적입니다.</p>
+            <ul>
+                <li><b>시공 절차:</b>
+                    <ol>
+                        <li>건물 기초 철근 배근 시 접지선 연결 포인트 확보</li>
+                        <li>주요 구조 철근을 용접 또는 클램프로 연결</li>
+                        <li>접지인출선 설치 (최소 2개소 이상)</li>
+                        <li>콘크리트 타설 전 연속성 및 저항 측정</li>
+                        <li>콘크리트 타설 후 접지저항 측정</li>
+                    </ol>
+                </li>
+                <li><b>적합한 조건:</b> 신축 건물, 대형 콘크리트 구조물</li>
+                <li><b>장점:</b> 별도 접지공사 비용 절감, 넓은 접지면적 확보, 내구성 우수</li>
+                <li><b>단점:</b> 기존 건물에는 적용 어려움, 설계 단계부터 계획 필요</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- 특수 접지공법 -->
+    <div class="kec-method">
+        <h3>3. 특수 접지공법</h3>
+        
+        <div class="kec-method-section">
+            <h4>심정(Deep Well) 접지 시공</h4>
+            <p>깊은 심도(10-100m)까지 시추공을 뚫고 접지극을 설치하는 방식으로, 토양 저항률이 매우 높은 지역에 효과적입니다.</p>
+            <ul>
+                <li><b>시공 절차:</b>
+                    <ol>
+                        <li>시추공 천공 (직경 150-300mm, 깊이 10-100m)</li>
+                        <li>케이싱 설치 (필요 시)</li>
+                        <li>장심도 접지극 설치</li>
+                        <li>저저항 접지충진제 주입</li>
+                        <li>접지선 인출 및 연결</li>
+                        <li>접지저항 측정</li>
+                    </ol>
+                </li>
+                <li><b>적합한 조건:</b> 암반지역, 매우 높은 토양 저항률, 제한된 공간</li>
+                <li><b>장점:</b> 매우 낮은 접지저항 달성 가능, 좁은 공간에서도 적용 가능</li>
+                <li><b>단점:</b> 시공비용이 매우 높음, 특수 장비 필요</li>
+            </ul>
+        </div>
+        
+        <div class="kec-method-section">
+            <h4>Ufer 접지 시공</h4>
+            <p>콘크리트의 알칼리성을 활용한 접지방식으로, 콘크리트 내에 접지극을 매립합니다.</p>
+            <ul>
+                <li><b>시공 절차:</b>
+                    <ol>
+                        <li>콘크리트 기초 타설 전 접지도체 배치</li>
+                        <li>철근과 접지도체 연결 (용접 또는 클램프)</li>
+                        <li>콘크리트 타설</li>
+                        <li>접지인출선 설치</li>
+                        <li>접지저항 측정</li>
+                    </ol>
+                </li>
+                <li><b>적합한 조건:</b> 신축 건물, 암반지역</li>
+                <li><b>장점:</b> 콘크리트의 습기 보유 특성으로 안정적인 접지 성능, 구조적 보강 역할</li>
+                <li><b>단점:</b> 기존 건물에는 적용 어려움, 콘크리트 구조물 필요</li>
+            </ul>
+        </div>
+        
+        <div class="kec-method-section">
+            <h4>약품처리 접지 시공</h4>
+            <p>토양의 저항률을 낮추기 위해 특수 약품을 처리하는 방식입니다.</p>
+            <ul>
+                <li><b>시공 절차:</b>
+                    <ol>
+                        <li>접지극 설치용 구덩이 굴착 (1m x 1m x 1m 이상)</li>
+                        <li>접지 보강제 하부 포설 (10cm 두께)</li>
+                        <li>접지극 설치</li>
+                        <li>접지 보강제로 주변 충진</li>
+                        <li>되메우기 및 다짐</li>
+                        <li>접지저항 측정</li>
+                    </ol>
+                </li>
+                <li><b>적합한 조건:</b> 건조한 지역, 계절적 변화가 큰 지역</li>
+                <li><b>장점:</b> 계절 및 기후 변화에 안정적인 접지저항 유지</li>
+                <li><b>단점:</b> 정기적인 유지보수 필요 (약품 재충진), 환경영향 고려 필요</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- 접지저항 측정 방법 -->
+    <div class="kec-method">
+        <h3>4. 접지저항 측정 방법</h3>
+        
+        <div class="kec-method-section">
+            <h4>전위강하법 (3점 측정법)</h4>
+            <p>가장 일반적인 접지저항 측정 방법으로, 3개의 전극을 일직선상에 배치하여 측정합니다.</p>
+            <ul>
+                <li><b>측정 절차:</b>
+                    <ol>
+                        <li>측정할 접지극(E)과 일직선상으로 보조 전류전극(C)을 20m 이상 떨어진 곳에 설치</li>
+                        <li>접지극(E)과 전류전극(C) 사이 약 62% 지점에 전위전극(P) 설치</li>
+                        <li>접지저항 테스터기로 측정</li>
+                        <li>전위전극 위치를 변경하며 3회 이상 측정하여 평균값 사용</li>
+                    </ol>
+                </li>
+                <li><b>장점:</b> 정확한 접지저항 측정 가능, 표준 측정법</li>
+                <li><b>단점:</b> 넓은 공간 필요, 도심지역에서 적용 어려움</li>
+            </ul>
+        </div>
+        
+        <div class="kec-method-section">
+            <h4>선택적 측정법 (클램프온 측정법)</h4>
+            <p>접지선을 분리하지 않고 클램프형 측정기로 접지저항을 측정하는 방법입니다.</p>
+            <ul>
+                <li><b>측정 절차:</b>
+                    <ol>
+                        <li>클램프온 접지저항계 준비</li>
+                        <li>접지선에 클램프 체결</li>
+                        <li>측정값 확인</li>
+                    </ol>
+                </li>
+                <li><b>장점:</b> 접지극 분리 불필요, 빠른 측정 가능, 좁은 공간에서도 측정 가능</li>
+                <li><b>단점:</b> 병렬 접지경로가 있어야 정확한 측정 가능, 단독 접지에서는 부정확</li>
+            </ul>
+        </div>
+        
+        <div class="note-box">
+            <p><b>측정 시 주의사항:</b></p>
+            <ul>
+                <li>측정 전 접지선과 접지극의 연결상태 확인</li>
+                <li>우천 시 측정은 피하거나 측정값의 신뢰성 검토 필요</li>
+                <li>측정선 간 간섭 방지를 위해 측정선은 서로 교차되지 않도록 포설</li>
+                <li>계절적 변화를 고려하여 건기와 우기에 각각 측정 권장</li>
+                <li>대규모 접지시스템은 여러 지점에서 측정하여 평균값 사용</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+    </div>
+    
+    <!-- 고정된 하단 버튼 영역 -->
+    <div class="fixed-bottom">
+        <div class="btn-container">
+            <button class="reset" id="reset-btn">초기화</button>
+            <button id="calculate-btn">계산하기</button>
+        </div>
+    </div>
+
+    <script>
+    
+    // 홈으로 돌아가기
+    function goBack() {
+      window.location.href = 'index.html';
+    }
+       // 접지시스템 설계 계산기 JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM 요소
+    const soilType = document.getElementById('soil-type');
+    const soilResistivity = document.getElementById('soil-resistivity');
+    const targetResistance = document.getElementById('target-resistance');
+    const rodSpacing = document.getElementById('rod-spacing');
+    const arrangementType = document.getElementById('arrangement-type');
+    const calculateBtn = document.getElementById('calculate-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const resultSection = document.getElementById('result-section');
+    const rodList = document.getElementById('rod-list');
+    const addRodBtn = document.getElementById('add-rod-btn');
+    const suggestionsContainer = document.getElementById('suggestions-container');
+    
+    // 결과 관련 DOM 요소
+    const individualResistances = document.getElementById('individual-resistances');
+    const targetResistanceDisplay = document.getElementById('target-resistance-display');
+    const requiredRodsCount = document.getElementById('required-rods-count');
+    const arrangementDescription = document.getElementById('arrangement-description');
+    const arrangementDiagram = document.getElementById('arrangement-diagram');
+    const dimensionsInfo = document.getElementById('dimensions-info');
+    const recommendations = document.getElementById('recommendations');
+    const expectedResistance = document.getElementById('expected-resistance');
+    const comparisonTable = document.getElementById('comparison-table').getElementsByTagName('tbody')[0];
+    
+    // 탭 전환 기능
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            
+            // 모든 탭 비활성화
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // 선택한 탭 활성화
+            this.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            // 계산기 탭이 아닌 경우 하단 버튼 숨기기
+            if (tabId === 'calculator-tab') {
+                document.querySelector('.fixed-bottom').style.display = 'block';
+            } else {
+                document.querySelector('.fixed-bottom').style.display = 'none';
+            }
+        });
+    });
+    
+    // KEC 기준 검색 기능
+    const kecSearch = document.getElementById('kec-search');
+    const kecSearchBtn = document.getElementById('kec-search-btn');
+    const kecTable = document.getElementById('kec-standards-table');
+    
+    if (kecSearchBtn && kecSearch && kecTable) {
+        kecSearchBtn.addEventListener('click', function() {
+            const searchText = kecSearch.value.toLowerCase();
+            const rows = kecTable.getElementsByTagName('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i].classList.contains('kec-cat')) continue; // 카테고리 행은 항상 표시
+                
+                const cells = rows[i].getElementsByTagName('td');
+                let found = false;
+                
+                for (let j = 0; j < cells.length; j++) {
+                    const cellText = cells[j].textContent.toLowerCase();
+                    
+                    if (cellText.includes(searchText)) {
+                        found = true;
+                        break;
+                    }
+                }
+                
+                rows[i].style.display = found ? '' : 'none';
+                if (found) {
+                    rows[i].classList.add('highlight-row');
+                } else {
+                    rows[i].classList.remove('highlight-row');
+                }
+            }
+        });
+        
+        kecSearch.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                kecSearchBtn.click();
+            }
+        });
+    }
+
+// 접지봉 유형별 규격 데이터
+    const rodTypes = {
+        "standard": { 
+            name: "표준 접지봉 (구리, 구리도금 강)",
+            specs: [
+                { name: "구리봉 1.5m × 14mm", length: 1.5, diameter: 14 },
+                { name: "구리봉 1.8m × 14mm", length: 1.8, diameter: 14 },
+                { name: "구리봉 2.4m × 16mm", length: 2.4, diameter: 16 },
+                { name: "구리봉 3.0m × 16mm", length: 3.0, diameter: 16 },
+                { name: "구리도금강 1.5m × 14mm", length: 1.5, diameter: 14 },
+                { name: "구리도금강 1.8m × 16mm", length: 1.8, diameter: 16 },
+                { name: "구리도금강 2.4m × 16mm", length: 2.4, diameter: 16 },
+                { name: "구리도금강 3.0m × 18mm", length: 3.0, diameter: 18 }
+            ],
+            enhancementFactor: 1.0
+        },
+        "deep": { 
+            name: "심타 접지봉 (깊이 확장형)",
+            specs: [
+                { name: "심타 접지봉 1.5m × 14mm (기본)", length: 1.5, diameter: 14 },
+                { name: "심타 접지봉 3.0m × 14mm (2단)", length: 3.0, diameter: 14 },
+                { name: "심타 접지봉 4.5m × 14mm (3단)", length: 4.5, diameter: 14 },
+                { name: "심타 접지봉 6.0m × 14mm (4단)", length: 6.0, diameter: 14 },
+                { name: "심타 접지봉 7.5m × 14mm (5단)", length: 7.5, diameter: 14 },
+                { name: "심타 접지봉 9.0m × 14mm (6단)", length: 9.0, diameter: 14 },
+                { name: "심타 접지봉 10.5m × 14mm (7단)", length: 10.5, diameter: 14 },
+                { name: "심타 접지봉 12.0m × 14mm (8단)", length: 12.0, diameter: 14 }
+            ],
+            enhancementFactor: 0.8 // 심도가 깊어져 저항 감소 효과 있음
+        },
+        "carbon": { 
+            name: "탄소봉 접지",
+            specs: [
+                { name: "탄소봉 1.0m × 100mm", length: 1.0, diameter: 100 },
+                { name: "탄소봉 1.0m × 150mm", length: 1.0, diameter: 150 },
+                { name: "탄소봉 1.0m × 200mm", length: 1.0, diameter: 200 },
+                { name: "탄소봉 1.0m × 250mm", length: 1.0, diameter: 250 },
+                { name: "탄소봉 1.0m × 300mm", length: 1.0, diameter: 300 }
+            ],
+            enhancementFactor: 0.5 // 탄소봉은 표준 접지봉보다 약 50% 저항 감소 (더 효과적)
+        },
+        "concrete": { 
+            name: "콘크리트 접지봉",
+            specs: [
+                { name: "콘크리트 접지봉 1.5m × 150mm", length: 1.5, diameter: 150 },
+                { name: "콘크리트 접지봉 2.0m × 200mm", length: 2.0, diameter: 200 },
+                { name: "콘크리트 접지봉 2.5m × 250mm", length: 2.5, diameter: 250 },
+                { name: "콘크리트 접지봉 3.0m × 300mm", length: 3.0, diameter: 300 }
+            ],
+            enhancementFactor: 0.7 // 콘크리트 접지봉은 표준 접지봉보다 약 30% 저항 감소
+        },
+        "enhanced": { 
+            name: "향상된 접지재 (GEM, 벤토나이트 등)",
+            specs: [
+                { name: "GEM 처리 접지봉 1.5m × 16mm", length: 1.5, diameter: 16 },
+                { name: "GEM 처리 접지봉 2.4m × 16mm", length: 2.4, diameter: 16 },
+                { name: "벤토나이트 접지봉 2.4m × 18mm", length: 2.4, diameter: 18 },
+                { name: "벤토나이트 접지봉 3.0m × 20mm", length: 3.0, diameter: 20 },
+                { name: "화학적 처리 접지봉 3.0m × 20mm", length: 3.0, diameter: 20 },
+                { name: "화학적 처리 접지봉 3.6m × 22mm", length: 3.6, diameter: 22 }
+            ],
+            enhancementFactor: 0.4 // 향상된 접지재는 약 60% 저항 감소
+        }
+    };
+    
+    // 접지봉 ID 카운터
+    let rodCounter = 0;
+    
+    // 접지봉 목록
+    let groundingRods = [];
+    
+    // 접지봉 추가 함수
+    function addRod(rodType, specIndex, count = 1) {
+        const rodId = `rod-${rodCounter++}`;
+        const selectedType = rodTypes[rodType];
+        const selectedSpec = selectedType.specs[specIndex || 0];
+        
+        const newRod = {
+            id: rodId,
+            type: rodType,
+            name: selectedType.name,
+            spec: selectedSpec,
+            enhancementFactor: selectedType.enhancementFactor,
+            count: count
+        };
+        
+        groundingRods.push(newRod);
+        renderRodList();
+        calculateGroundingSystem();
+        
+        return newRod;
+    }
+    
+    // 접지봉 제거 함수
+    function removeRod(rodId) {
+        groundingRods = groundingRods.filter(rod => rod.id !== rodId);
+        renderRodList();
+        calculateGroundingSystem();
+    }
+
+// 접지봉 목록 렌더링
+    function renderRodList() {
+        if (!rodList) return;
+        
+        rodList.innerHTML = '';
+        
+        if (groundingRods.length === 0) {
+            rodList.innerHTML = '<p>접지시스템에 접지봉이 없습니다. 아래 버튼을 눌러 접지봉을 추가하세요.</p>';
+            return;
+        }
+        
+        groundingRods.forEach(rod => {
+            const rodElement = document.createElement('div');
+            rodElement.className = 'rod-item';
+            rodElement.id = rod.id;
+            
+            // 심타 접지봉인 경우 특별 처리 (수량 대신 단계 선택)
+            if (rod.type === 'deep') {
+                rodElement.innerHTML = `
+                    <div class="rod-info">
+                        <select class="rod-spec-select" data-rod-id="${rod.id}">
+                            ${rodTypes[rod.type].specs.map((spec, index) => 
+                                `<option value="${index}" ${spec.name === rod.spec.name ? 'selected' : ''}>${spec.name}</option>`
+                            ).join('')}
+                        </select>
+                        <label class="quantity-label">위치 수:</label>
+                        <input type="number" class="rod-count" min="1" value="${rod.count}" data-rod-id="${rod.id}">
+                    </div>
+                    <div class="rod-action">
+                        <button class="remove-rod" data-rod-id="${rod.id}">삭제</button>
+                    </div>
+                `;
+            } else {
+                // 일반 접지봉은 기존 방식 유지
+                rodElement.innerHTML = `
+                    <div class="rod-info">
+                        <select class="rod-spec-select" data-rod-id="${rod.id}">
+                            ${rodTypes[rod.type].specs.map((spec, index) => 
+                                `<option value="${index}" ${spec.name === rod.spec.name ? 'selected' : ''}>${spec.name}</option>`
+                            ).join('')}
+                        </select>
+                        <label class="quantity-label">갯수:</label>
+                        <input type="number" class="rod-count" min="1" value="${rod.count}" data-rod-id="${rod.id}">
+                    </div>
+                    <div class="rod-action">
+                        <button class="remove-rod" data-rod-id="${rod.id}">삭제</button>
+                    </div>
+                `;
+            }
+            
+            rodList.appendChild(rodElement);
+        });
+        
+        // 접지봉 규격 변경 이벤트 리스너 추가
+        document.querySelectorAll('.rod-spec-select').forEach(select => {
+            select.addEventListener('change', function() {
+                const rodId = this.getAttribute('data-rod-id');
+                const rodIndex = groundingRods.findIndex(rod => rod.id === rodId);
+                const specIndex = parseInt(this.value);
+                
+                if (rodIndex !== -1) {
+                    groundingRods[rodIndex].spec = rodTypes[groundingRods[rodIndex].type].specs[specIndex];
+                    calculateGroundingSystem();
+                }
+            });
+        });
+        
+        // 접지봉 갯수 변경 이벤트 리스너 추가
+        document.querySelectorAll('.rod-count').forEach(input => {
+            input.addEventListener('change', function() {
+                const rodId = this.getAttribute('data-rod-id');
+                const rodIndex = groundingRods.findIndex(rod => rod.id === rodId);
+                const count = parseInt(this.value) || 1;
+                
+                if (rodIndex !== -1) {
+                    groundingRods[rodIndex].count = Math.max(1, count); // 최소 1개 이상
+                    this.value = groundingRods[rodIndex].count; // 입력값 업데이트
+                    calculateGroundingSystem();
+                }
+            });
+        });
+        
+        // 접지봉 삭제 이벤트 리스너 추가
+        document.querySelectorAll('.remove-rod').forEach(button => {
+            button.addEventListener('click', function() {
+                const rodId = this.getAttribute('data-rod-id');
+                removeRod(rodId);
+            });
+        });
+    }
+
+    // 새 접지봉 추가 버튼 이벤트
+    if (addRodBtn) {
+        addRodBtn.addEventListener('click', function() {
+            // 타입 선택 모달 또는 메뉴 표시
+            const rodTypeMenu = document.createElement('div');
+            rodTypeMenu.className = 'rod-type-menu';
+            rodTypeMenu.style.position = 'absolute';
+            rodTypeMenu.style.left = `${this.offsetLeft}px`;
+            rodTypeMenu.style.top = `${this.offsetTop + this.offsetHeight + 5}px`;
+            rodTypeMenu.style.zIndex = '1001';
+            rodTypeMenu.style.backgroundColor = 'white';
+            rodTypeMenu.style.border = '1px solid #ddd';
+            rodTypeMenu.style.borderRadius = '5px';
+            rodTypeMenu.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+            rodTypeMenu.style.padding = '10px';
+            
+            Object.keys(rodTypes).forEach(type => {
+                const typeOption = document.createElement('div');
+                typeOption.style.padding = '8px 15px';
+                typeOption.style.cursor = 'pointer';
+                typeOption.style.borderBottom = '1px solid #eee';
+                typeOption.textContent = rodTypes[type].name;
+                
+                typeOption.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#f5f5f5';
+                });
+                
+                typeOption.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = 'white';
+                });
+                
+                typeOption.addEventListener('click', function() {
+                    addRod(type, 0);
+                    document.body.removeChild(rodTypeMenu);
+                });
+                
+                rodTypeMenu.appendChild(typeOption);
+            });
+            
+            document.body.appendChild(rodTypeMenu);
+            
+            // 메뉴 외부 클릭 시 닫기
+            const closeMenu = function(e) {
+                if (!rodTypeMenu.contains(e.target) && e.target !== addRodBtn) {
+                    document.body.removeChild(rodTypeMenu);
+                    document.removeEventListener('click', closeMenu);
+                }
+            };
+            
+            // 이벤트 전파 방지를 위해 setTimeout 사용
+            setTimeout(() => {
+                document.addEventListener('click', closeMenu);
+            }, 0);
+        });
+    }
+
+
+// 개선된 다이어그램 업데이트 함수 - 평면도와 단면도를 모두 표시
+function updateArrangementDiagram(arrangement, rodsCount, spacing) {
+    if (!arrangementDiagram || rodsCount <= 0) return;
+    
+    // 심타 접지봉이 포함된 경우 확인
+    const hasDeepRods = groundingRods.some(rod => rod.type === 'deep');
+    
+    // 다이어그램 컨테이너를 나누어 표시하기 위한 HTML
+    let diagramHTML = '<div style="display: flex; flex-direction: column; gap: 20px; width: 100%;">';
+    
+    // 먼저 평면도(위에서 본 모습) 추가
+    diagramHTML += '<div style="border-bottom: 1px dashed #aaa; padding-bottom: 15px;">';
+    diagramHTML += `<h4 style="text-align: center; margin: 0 0 10px 0; color: #333;">평면도 (위에서 본 배치도)</h4>`;
+    
+    // 평면도 SVG 생성
+    if (arrangement === 'line') {
+        // 직선 배열 평면도
+        diagramHTML += `
+            <svg width="300" height="120" viewBox="0 0 300 120" preserveAspectRatio="xMidYMid meet">
+                <line x1="20" y1="60" x2="280" y2="60" stroke="#333" stroke-width="2" class="diagram-line"/>
+                ${Array.from({length: rodsCount}, (_, i) => {
+                    const x = 20 + i * (260 / (rodsCount - 1 || 1));
+                    return `
+                        <circle cx="${x}" cy="60" r="6" class="rod-point"/>
+                        <text x="${x}" y="80" text-anchor="middle" class="rod-text">${i+1}</text>
+                    `;
+                }).join('')}
+                <text x="150" y="100" text-anchor="middle" font-size="12">직선 배열 - ${spacing}m 간격</text>
+                ${rodsCount > 1 ? `
+                    <line x1="20" y1="95" x2="${20 + spacing * 20}" y2="95" stroke="#333" stroke-width="1"/>
+                    <line x1="20" y1="92" x2="20" y2="98" stroke="#333" stroke-width="1"/>
+                    <line x1="${20 + spacing * 20}" y1="92" x2="${20 + spacing * 20}" y2="98" stroke="#333" stroke-width="1"/>
+                    <text x="${20 + (spacing * 10)}" y="90" text-anchor="middle" font-size="10">${spacing}m</text>
+                ` : ''}
+                
+                <!-- 배치 유형별 접지봉 표시 -->
+                ${groundingRods.map((rod, rodIndex) => {
+                    // 접지봉 유형별 색상과 표시 설정
+                    let fillColor, strokeColor;
+                    if (rod.type === 'standard') {
+                        fillColor = "#4CAF50";
+                        strokeColor = "#2E7D32";
+                    } else if (rod.type === 'carbon') {
+                        fillColor = "#9C27B0";
+                        strokeColor = "#6A1B9A";
+                    } else if (rod.type === 'enhanced') {
+                        fillColor = "#2196F3";
+                        strokeColor = "#0D47A1";
+                    } else if (rod.type === 'concrete') {
+                        fillColor = "#FFC107";
+                        strokeColor = "#FFA000";
+                    } else if (rod.type === 'deep') {
+                        fillColor = "#FF5722";
+                        strokeColor = "#E64A19";
+                    }
+                    
+                    // 각 접지봉 유형별 범례
+                    return `
+                        <rect x="${20 + rodIndex * 60}" y="20" width="12" height="12" fill="${fillColor}" stroke="${strokeColor}" stroke-width="1"/>
+                        <text x="${40 + rodIndex * 60}" y="30" font-size="10" text-anchor="start">${rod.type === 'deep' ? '심타' : (rod.type === 'standard' ? '표준' : (rod.type === 'carbon' ? '탄소' : (rod.type === 'enhanced' ? '향상' : '콘크리트')))} (${rod.count}개)</text>
+                    `;
+                }).join('')}
+            </svg>
+        `;
+    } else if (arrangement === 'ring') {
+        // 원형 배열 평면도
+        const centerX = 150;
+        const centerY = 80;
+        const radius = 55;
+        
+        diagramHTML += `
+            <svg width="300" height="170" viewBox="0 0 300 170" preserveAspectRatio="xMidYMid meet">
+                <circle cx="${centerX}" cy="${centerY}" r="${radius}" stroke="#333" stroke-width="1" fill="none" class="diagram-line"/>
+                
+                <!-- 접지봉 표시 -->
+                ${(() => {
+                    let rodElements = '';
+                    let totalCount = 0;
+                    let rodTypeOffsets = {};
+                    
+                    // 각 유형별 접지봉 배치
+                    groundingRods.forEach((rod, typeIndex) => {
+                        // 접지봉 유형별 색상 설정
+                        let fillColor, strokeColor;
+                        if (rod.type === 'standard') {
+                            fillColor = "#4CAF50";
+                            strokeColor = "#2E7D32";
+                        } else if (rod.type === 'carbon') {
+                            fillColor = "#9C27B0";
+                            strokeColor = "#6A1B9A";
+                        } else if (rod.type === 'enhanced') {
+                            fillColor = "#2196F3";
+                            strokeColor = "#0D47A1";
+                        } else if (rod.type === 'concrete') {
+                            fillColor = "#FFC107";
+                            strokeColor = "#FFA000";
+                        } else if (rod.type === 'deep') {
+                            fillColor = "#FF5722";
+                            strokeColor = "#E64A19";
+                        }
+                        
+                        // 이 유형의 접지봉 시작 인덱스 계산
+                        rodTypeOffsets[rod.type] = totalCount;
+                        
+                        // 이 유형의 각 접지봉 표시
+                        for (let i = 0; i < rod.count; i++) {
+                            const rodIndex = totalCount + i;
+                            const angle = (rodIndex * 2 * Math.PI) / rodsCount;
+                            const x = centerX + radius * Math.cos(angle);
+                            const y = centerY + radius * Math.sin(angle);
+                            
+                            rodElements += `
+                                <circle cx="${x}" cy="${y}" r="6" fill="${fillColor}" stroke="${strokeColor}" stroke-width="1"/>
+                                <text x="${x}" y="${y + (y > centerY ? 15 : -5)}" text-anchor="middle" class="rod-text">${rodIndex+1}</text>
+                            `;
+                        }
+                        
+                        totalCount += rod.count;
+                    });
+                    
+                    return rodElements;
+                })()}
+                
+                <text x="${centerX}" y="${centerY + radius + 30}" text-anchor="middle" font-size="12">원형 배열 - ${spacing}m 간격</text>
+                
+                <!-- 범례 -->
+                ${groundingRods.map((rod, rodIndex) => {
+                    // 접지봉 유형별 색상과 표시 설정
+                    let fillColor, strokeColor;
+                    if (rod.type === 'standard') {
+                        fillColor = "#4CAF50";
+                        strokeColor = "#2E7D32";
+                    } else if (rod.type === 'carbon') {
+                        fillColor = "#9C27B0";
+                        strokeColor = "#6A1B9A";
+                    } else if (rod.type === 'enhanced') {
+                        fillColor = "#2196F3";
+                        strokeColor = "#0D47A1";
+                    } else if (rod.type === 'concrete') {
+                        fillColor = "#FFC107";
+                        strokeColor = "#FFA000";
+                    } else if (rod.type === 'deep') {
+                        fillColor = "#FF5722";
+                        strokeColor = "#E64A19";
+                    }
+                    
+                    return `
+                        <rect x="${20 + rodIndex * 60}" y="20" width="12" height="12" fill="${fillColor}" stroke="${strokeColor}" stroke-width="1"/>
+                        <text x="${40 + rodIndex * 60}" y="30" font-size="10" text-anchor="start">${rod.type === 'deep' ? '심타' : (rod.type === 'standard' ? '표준' : (rod.type === 'carbon' ? '탄소' : (rod.type === 'enhanced' ? '향상' : '콘크리트')))} (${rod.count}개)</text>
+                    `;
+                }).join('')}
+            </svg>
+        `;
+    } else if (arrangement === 'grid') {
+        // 그리드 배열 평면도
+        const gridSize = Math.ceil(Math.sqrt(rodsCount));
+        const cellSize = 240 / (gridSize > 1 ? gridSize - 1 : 1);
+        
+        diagramHTML += `
+            <svg width="300" height="320" viewBox="0 0 300 320" preserveAspectRatio="xMidYMid meet">
+                <!-- 그리드 라인 -->
+                ${Array.from({length: gridSize}, (_, i) => 
+                    `<line x1="30" y1="${40 + i * cellSize}" x2="${30 + (gridSize-1) * cellSize}" y2="${40 + i * cellSize}" stroke="#ccc" stroke-width="1" class="diagram-grid"/>
+                    <line x1="${30 + i * cellSize}" y1="40" x2="${30 + i * cellSize}" y2="${40 + (gridSize-1) * cellSize}" stroke="#ccc" stroke-width="1" class="diagram-grid"/>`
+                ).join('')}
+                
+                <!-- 접지봉 표시 -->
+                ${(() => {
+                    let rodElements = '';
+                    let totalCount = 0;
+                    let rodTypeOffsets = {};
+                    
+                    // 각 유형별 접지봉 배치
+                    groundingRods.forEach((rod, typeIndex) => {
+                        // 접지봉 유형별 색상 설정
+                        let fillColor, strokeColor;
+                        if (rod.type === 'standard') {
+                            fillColor = "#4CAF50";
+                            strokeColor = "#2E7D32";
+                        } else if (rod.type === 'carbon') {
+                            fillColor = "#9C27B0";
+                            strokeColor = "#6A1B9A";
+                        } else if (rod.type === 'enhanced') {
+                            fillColor = "#2196F3";
+                            strokeColor = "#0D47A1";
+                        } else if (rod.type === 'concrete') {
+                            fillColor = "#FFC107";
+                            strokeColor = "#FFA000";
+                        } else if (rod.type === 'deep') {
+                            fillColor = "#FF5722";
+                            strokeColor = "#E64A19";
+                        }
+                        
+                        // 이 유형의 접지봉 시작 인덱스 계산
+                        rodTypeOffsets[rod.type] = totalCount;
+                        
+                        // 이 유형의 각 접지봉 표시
+                        for (let i = 0; i < rod.count; i++) {
+                            const rodIndex = totalCount + i;
+                            const row = Math.floor(rodIndex / gridSize);
+                            const col = rodIndex % gridSize;
+                            
+                            if (rodIndex < rodsCount) {
+                                rodElements += `
+                                    <circle cx="${30 + col * cellSize}" cy="${40 + row * cellSize}" r="6" fill="${fillColor}" stroke="${strokeColor}" stroke-width="1"/>
+                                    <text x="${30 + col * cellSize}" y="${55 + row * cellSize}" text-anchor="middle" class="rod-text">${rodIndex+1}</text>
+                                `;
+                            }
+                        }
+                        
+                        totalCount += rod.count;
+                    });
+                    
+                    return rodElements;
+                })()}
+                
+                <text x="150" y="290" text-anchor="middle" font-size="12">그리드 배열 - ${spacing}m 간격의 ${gridSize}×${gridSize} 그리드</text>
+                
+                <!-- 범례 -->
+                ${groundingRods.map((rod, rodIndex) => {
+                    // 접지봉 유형별 색상과 표시 설정
+                    let fillColor, strokeColor;
+                    if (rod.type === 'standard') {
+                        fillColor = "#4CAF50";
+                        strokeColor = "#2E7D32";
+                    } else if (rod.type === 'carbon') {
+                        fillColor = "#9C27B0";
+                        strokeColor = "#6A1B9A";
+                    } else if (rod.type === 'enhanced') {
+                        fillColor = "#2196F3";
+                        strokeColor = "#0D47A1";
+                    } else if (rod.type === 'concrete') {
+                        fillColor = "#FFC107";
+                        strokeColor = "#FFA000";
+                    } else if (rod.type === 'deep') {
+                        fillColor = "#FF5722";
+                        strokeColor = "#E64A19";
+                    }
+                    
+                    return `
+                        <rect x="${20 + rodIndex * 60}" y="10" width="12" height="12" fill="${fillColor}" stroke="${strokeColor}" stroke-width="1"/>
+                        <text x="${40 + rodIndex * 60}" y="20" font-size="10" text-anchor="start">${rod.type === 'deep' ? '심타' : (rod.type === 'standard' ? '표준' : (rod.type === 'carbon' ? '탄소' : (rod.type === 'enhanced' ? '향상' : '콘크리트')))} (${rod.count}개)</text>
+                    `;
+                }).join('')}
+            </svg>
+        `;
+    }
+    
+    diagramHTML += '</div>'; // 평면도 컨테이너 닫기
+    
+    // 단면도 추가 (기존 코드 수정)
+    diagramHTML += '<div>';
+    diagramHTML += `<h4 style="text-align: center; margin: 0 0 10px 0; color: #333;">단면도 (측면에서 본 모습)</h4>`;
+    
+    // 다양한 접지봉의 깊이를 표시할 SVG 생성
+    diagramHTML += `
+        <svg width="300" height="350" viewBox="0 0 300 350" preserveAspectRatio="xMidYMid meet">
+            <!-- 지표면 표시 -->
+            <line x1="20" y1="50" x2="280" y2="50" stroke="#333" stroke-width="2" class="diagram-line"/>
+            <text x="25" y="45" font-size="12">지표면</text>
+            
+            ${(() => {
+                // 각 종류별로 대표적인 접지봉 표시
+                let rodElements = '';
+                const shownRods = [];
+                let xOffset = 40;
+                
+                // 접지봉 유형별 대표 샘플 표시
+                groundingRods.forEach(rod => {
+                    // 이미 표시한 유형은 건너뜀 (중복 방지)
+                    const typeKey = `${rod.type}-${rod.spec.length}`;
+                    if (shownRods.includes(typeKey)) return;
+                    shownRods.push(typeKey);
+                    
+                    // 접지봉 유형별 색상과 표시 설정
+                    let color, name;
+                    if (rod.type === 'standard') {
+                        color = "#4CAF50";
+                        name = "표준 접지봉";
+                    } else if (rod.type === 'carbon') {
+                        color = "#9C27B0";
+                        name = "탄소봉";
+                    } else if (rod.type === 'enhanced') {
+                        color = "#2196F3";
+                        name = "향상된 접지재";
+                    } else if (rod.type === 'concrete') {
+                        color = "#FFC107";
+                        name = "콘크리트 접지봉";
+                    } else if (rod.type === 'deep') {
+                        color = "#FF5722";
+                        name = "심타 접지봉";
+                    }
+                    
+                    const length = rod.spec.length;
+                    const diameter = rod.spec.diameter;
+                    const isDeep = rod.type === 'deep';
+                    const isWide = rod.type === 'carbon' || rod.type === 'concrete';
+                    
+                    // 심타 접지봉은 특별한 표시
+                    if (isDeep) {
+                        const stages = Math.round(length / 1.5);
+                        rodElements += `
+                            <!-- 심타 접지봉 - ${rod.spec.name} -->
+                            <line x1="${xOffset}" y1="50" x2="${xOffset}" y2="${50 + length * 20}" stroke="${color}" stroke-width="3"/>
+                            <circle cx="${xOffset}" cy="50" r="6" fill="${color}" stroke="#333" stroke-width="1"/>
+                            ${Array.from({length: stages}, (_, i) => 
+                                `<line x1="${xOffset-10}" y1="${50 + (i+1) * 30}" x2="${xOffset+10}" y2="${50 + (i+1) * 30}" stroke="${color}" stroke-width="1"/>`
+                            ).join('')}
+                            <text x="${xOffset}" y="${50 + length * 20 + 20}" text-anchor="middle" font-size="12">${length}m</text>
+                            <text x="${xOffset}" y="25" text-anchor="middle" font-size="10">${name}</text>
+                            <text x="${xOffset}" y="38" text-anchor="middle" font-size="10">(${rod.count}개)</text>
+                        `;
+                    } else {
+                        // 일반 접지봉 - 굵은 접지봉(탄소, 콘크리트)은 더 굵게 표시
+                        const rodWidth = isWide ? 4 + (diameter / 50) : 2;
+                        rodElements += `
+                            <!-- ${rod.type} 접지봉 - ${rod.spec.name} -->
+                            <line x1="${xOffset}" y1="50" x2="${xOffset}" y2="${50 + length * 20}" stroke="${color}" stroke-width="${rodWidth}"/>
+                            <circle cx="${xOffset}" cy="50" r="6" fill="${color}" stroke="#333" stroke-width="1"/>
+                            <text x="${xOffset}" y="${50 + length * 20 + 20}" text-anchor="middle" font-size="12">${length}m</text>
+                            <text x="${xOffset}" y="25" text-anchor="middle" font-size="10">${name}</text>
+                            <text x="${xOffset}" y="38" text-anchor="middle" font-size="10">(${rod.count}개)</text>
+                        `;
+                    }
+                    
+                    // 다음 접지봉 위치
+                    xOffset += 60;
+                });
+                
+                return rodElements;
+            })()}
+            
+            <!-- 하단 설명 -->
+            <text x="150" y="320" text-anchor="middle" font-size="12" font-weight="bold">접지봉 종류별 깊이 비교</text>
+        </svg>
+    `;
+    diagramHTML += '</div>'; // 단면도 컨테이너 닫기
+    
+    diagramHTML += '</div>'; // 전체 다이어그램 컨테이너 닫기
+    
+    // 다이어그램 업데이트
+    arrangementDiagram.innerHTML = diagramHTML;
+}
+
+
+// 접지 시스템 계산 함수
+    // 접지 시스템 계산 함수 - 완전히 수정된 버전
+function calculateGroundingSystem() {
+    if (!soilResistivity || !targetResistance || !rodSpacing || !arrangementType || !resultSection) return;
+    
+    // 입력값 검증
+    if (groundingRods.length === 0) {
+        clearResults();
+        return;
+    }
+    
+    // 입력값 가져오기 - 문자열 그대로 가져옴
+    const resistivityStr = soilResistivity.value;
+    const targetStr = targetResistance.value;
+    const spacingStr = rodSpacing.value;
+    const arrangement = arrangementType.value;
+    
+    // 디버그 로그 - 원본 문자열 출력
+    console.log(`원본 입력값(문자열): 저항률=${resistivityStr}, 목표저항=${targetStr}, 간격=${spacingStr}`);
+    
+    // 숫자로 변환 (계산용)
+    const resistivity = Number(resistivityStr);
+    const target = Number(targetStr);
+    const spacing = Number(spacingStr);
+    
+    // 디버그 로그 - 변환된 숫자 출력
+    console.log(`변환 후 숫자: 저항률=${resistivity}, 목표저항=${target}, 간격=${spacing}`);
+    
+    // 유효성 검사
+    if (isNaN(resistivity) || isNaN(target) || isNaN(spacing) ||
+        resistivity <= 0 || target <= 0 || spacing <= 0) {
+        // 유효하지 않은 입력이 있으면 결과를 지우고 끝냄
+        clearResults();
+        return;
+    }
+    
+    // 개별 접지봉 저항 계산 및 표시
+    individualResistances.innerHTML = '<h4>개별 접지봉 저항값:</h4><ul>';
+    
+    let totalParallelResistance = 0;
+    let totalRods = 0;
+    
+    // 각 접지봉 유형별 저항 계산 및 디버그 정보
+    const rodResistances = [];
+    
+    groundingRods.forEach((rod, index) => {
+        // 단일 접지봉 저항 계산 (R = (ρ/2πL) * [ln(4L/d) - 1])
+        const length = rod.spec.length;
+        const diameter = rod.spec.diameter / 1000; // mm를 m로 변환
+        
+        // 계산 중간값 로깅
+        console.log(`접지봉 ${index+1}: 길이=${length}m, 직경=${diameter}m, 향상계수=${rod.enhancementFactor}`);
+        
+        let singleRodRes = (resistivity / (2 * Math.PI * length)) * (Math.log(4 * length / diameter) - 1);
+        singleRodRes *= rod.enhancementFactor; // 향상 계수 적용
+        
+        // 저항값 저장
+        rodResistances.push({
+            type: rod.type,
+            count: rod.count,
+            singleResistance: singleRodRes
+        });
+        
+        console.log(`접지봉 ${index+1} 단일 저항: ${singleRodRes.toFixed(2)}Ω`);
+        
+        // 병렬 저항 계산 (1/R_total = 1/R_1 + 1/R_2 + ...)
+        // 여러 개의 동일한 접지봉은 병렬로 계산 (각각의 개수만큼)
+        totalParallelResistance += (rod.count / singleRodRes);
+        totalRods += rod.count;
+        
+        individualResistances.innerHTML += `<li>${rod.spec.name} (${rod.count}개): ${singleRodRes.toFixed(2)} Ω</li>`;
+    });
+    
+    individualResistances.innerHTML += '</ul>';
+    
+    // 병렬 접지봉의 이론적 저항 (상호 영향 무시)
+    let theoreticalResistance = 0;
+    if (totalParallelResistance > 0) {
+        theoreticalResistance = 1 / totalParallelResistance;
+    }
+    
+    console.log(`이론적 병렬 저항(상호 영향 무시): ${theoreticalResistance.toFixed(2)}Ω`);
+    
+    // 중요!! 결과값 표시 - 목표 저항값 문자열 그대로 표시
+    // 소수점이 표시되는 문제 해결을 위해 원본 문자열 사용
+    targetResistanceDisplay.textContent = targetStr;
+    console.log(`목표 저항값 표시(문자열 그대로): ${targetStr}`);
+    
+    // 접지봉 개수별 저항 계산 (테이블 채우기)
+    comparisonTable.innerHTML = '';
+    
+    // 상호 영향 계수 계산 - 수정된 알고리즘
+    let mutualResistanceFactor = 1;
+    
+    if (totalRods > 1) {
+        // IEEE Standard 142-2007 (Green Book) 기반 수정된 계산식
+        
+        // 배치 패턴에 따른 기본 상호 영향 계수 설정
+        let kBase = 0;
+        if (arrangement === 'line') {
+            kBase = 0.85; // 직선 배열 - 상호 영향 높음
+        } else if (arrangement === 'ring') {
+            kBase = 0.75; // 원형 배열 - 상호 영향 중간
+        } else if (arrangement === 'grid') {
+            kBase = 0.65; // 그리드 배열 - 상호 영향 낮음
+        }
+        
+        // 간격을 적용한 수정된 상호 영향 계수 계산
+        // 간격이 작을수록 상호 영향이 커지도록 수정
+        const spacingFactor = Math.max(0.2, Math.min(1, spacing / 10)); // 0.2 ~ 1.0 사이 값
+        
+        // 간격이 작을 때 상호 영향이 커지도록 spacingFactor를 역수로 적용
+        // 접지봉 간격이 작을수록 mutualResistanceFactor가 커지도록 함
+        const intervalImpact = (1 / spacingFactor) * 0.5;
+        
+        // 접지봉 개수에 따른 영향 - 접지봉이 많을수록 상호 영향이 커짐
+        const countFactor = 1 + ((totalRods - 1) * 0.05);
+        
+        // 최종 상호 영향 계수 계산 - 간격이 작을수록, 개수가 많을수록 높아짐
+        mutualResistanceFactor = 1 + (kBase * intervalImpact * countFactor);
+        
+        // 상호 영향 계수가 너무 크거나 작아지지 않도록 제한
+        mutualResistanceFactor = Math.max(1.1, Math.min(mutualResistanceFactor, 2.0));
+        
+        console.log(`수정된 상호 영향 계수: ${mutualResistanceFactor.toFixed(3)} (kBase=${kBase}, spacingFactor=${spacingFactor.toFixed(2)}, intervalImpact=${intervalImpact.toFixed(2)}, 간격=${spacing}m, 개수=${totalRods})`);
+    }
+    
+    // 최종 저항 계산 (상호 영향 고려)
+    const actualResistance = theoreticalResistance * mutualResistanceFactor;
+    
+    console.log(`최종 계산 저항: ${actualResistance.toFixed(2)}Ω (이론적 저항 ${theoreticalResistance.toFixed(2)}Ω × 상호 영향 계수 ${mutualResistanceFactor.toFixed(3)})`);
+    
+    // 테이블에 행 추가 (현재 구성)
+    const row = comparisonTable.insertRow();
+    
+    const cellCount = row.insertCell(0);
+    cellCount.textContent = totalRods;
+    
+    const cellResistance = row.insertCell(1);
+    cellResistance.textContent = actualResistance.toFixed(2);
+    
+    const cellAchieved = row.insertCell(2);
+    if (actualResistance <= target) {
+        cellAchieved.textContent = '✓ 달성';
+        cellAchieved.style.color = 'green';
+    } else {
+        cellAchieved.textContent = '✗ 미달성';
+        cellAchieved.style.color = 'red';
+    }
+    
+    // 현재 구성 강조
+    row.style.backgroundColor = '#e8f5e9';
+    row.style.fontWeight = 'bold';
+    
+    // 결과 업데이트
+    requiredRodsCount.textContent = totalRods;
+    expectedResistance.textContent = actualResistance.toFixed(2);
+    
+    // 배치 설명 및 치수 정보 업데이트
+    let arrangementText = '';
+    let dimensionsText = '';
+    
+    if (arrangement === 'line') {
+        const totalLength = (totalRods - 1) * spacing;
+        arrangementText = `접지봉 ${totalRods}개를 ${spacing}m 간격으로 직선으로 배치하세요.`;
+        dimensionsText = `총 설치 길이: ${totalLength.toFixed(1)}m, 필요 부지 면적: ${totalLength.toFixed(1)}m × 1m = ${totalLength.toFixed(1)}m²`;
+    } else if (arrangement === 'ring') {
+        const circumference = spacing * totalRods;
+        const radius = circumference / (2 * Math.PI);
+        const area = Math.PI * radius * radius;
+        arrangementText = `접지봉 ${totalRods}개를 ${spacing}m 간격으로 원형으로 배치하세요.`;
+        dimensionsText = `원의 반지름: ${radius.toFixed(1)}m, 둘레: ${circumference.toFixed(1)}m, 필요 부지 면적: ${area.toFixed(1)}m²`;
+    } else if (arrangement === 'grid') {
+        const gridSize = Math.ceil(Math.sqrt(totalRods));
+        const side = (gridSize - 1) * spacing;
+        const area = side * side;
+        arrangementText = `접지봉 ${totalRods}개를 ${spacing}m 간격으로 ${gridSize}×${gridSize} 그리드로 배치하세요.`;
+        dimensionsText = `그리드 한 변 길이: ${side.toFixed(1)}m, 필요 부지 면적: ${area.toFixed(1)}m²`;
+    }
+    
+    arrangementDescription.textContent = arrangementText;
+    dimensionsInfo.textContent = dimensionsText;
+    
+    // 배치 다이어그램 업데이트 - SVG 그래픽으로 표시
+    updateArrangementDiagram(arrangement, totalRods, spacing);
+    
+    // 권장사항 업데이트
+    let rodTypeList = '';
+    groundingRods.forEach(rod => {
+        rodTypeList += `<li>${rod.spec.name} ${rod.count}개를 사용하세요.</li>`;
+    });
+    
+    // 일반 권장사항
+    recommendations.innerHTML = `
+        <ul>
+            ${rodTypeList}
+            <li>접지봉은 ${spacing}m 간격으로 배치하세요. 간격이 너무 좁으면 상호 간섭이 증가합니다.</li>
+            <li>모든 접지봉은 적절한 크기의 접지선으로 연결하세요(일반적으로 최소 35mm² 구리 도체).</li>
+            <li>접지봉과 접지선의 연결부는 용접 또는 압착으로 처리하고 부식 방지 처리를 하세요.</li>
+            <li>설치 후 계절별로 접지저항을 측정하여 변화를 모니터링하세요(특히 건기).</li>
+        </ul>
+    `;
+    
+    // 목표 달성 여부에 따른 추가 권장사항
+    if (actualResistance > target) {
+        recommendations.innerHTML += `
+            <p><strong>주의:</strong> 현재 설계로는 목표 접지저항을 달성하지 못합니다. 접지봉을 추가하거나 더 효과적인 유형의 접지봉을 사용하세요.</p>
+        `;
+        
+        // 목표 미달성 시 제안 생성
+        generateSuggestion();
+    } else {
+        // 목표 달성 시 제안 숨기기
+        suggestionsContainer.innerHTML = '';
+    }
+    
+    // 결과 섹션 표시
+    resultSection.style.display = 'block';
+    
+    console.log('계산 완료: 총 접지봉 수 ' + totalRods + '개, 최종 저항값 ' + actualResistance.toFixed(2) + 'Ω');
+}
+
+// 목표 저항값 입력 처리 설정 함수
+function setupTargetResistanceInput() {
+    if (!targetResistance) return;
+    
+    targetResistance.addEventListener('change', function() {
+        // 입력값 가져오기
+        let value = this.value;
+        
+        // 숫자만 허용 (소수점 포함)
+        value = value.replace(/[^0-9.]/g, '');
+        
+        // 올바른 숫자 형식으로 변환 시도
+        const num = Number(value);
+        if (!isNaN(num) && num > 0) {
+            // 소수점 없는 정수이면 정수 형태로 표시
+            if (num % 1 === 0) {
+                this.value = Math.floor(num).toString();
+            } else {
+                // 소수점이 있으면 소수점 첫째 자리까지만 표시
+                this.value = num.toFixed(1);
+            }
+        } else {
+            // 유효하지 않은 값이면 기본값 설정
+            this.value = "10";
+        }
+        
+        // 입력값 변경 후 계산 실행
+        calculateGroundingSystem();
+    });
+    
+    // 입력 중에도 숫자만 허용
+    targetResistance.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9.]/g, '');
+    });
+}
+
+// DOM 로드 시 목표 저항값 입력 설정 함수 호출을 추가
+document.addEventListener('DOMContentLoaded', function() {
+    // 기존 초기화 코드는 유지...
+    
+    // 목표 저항값 입력 처리 설정 추가
+    setupTargetResistanceInput();
+});
+    
+    // 결과 초기화 함수
+    function clearResults() {
+        if (individualResistances) individualResistances.innerHTML = '';
+        if (targetResistanceDisplay) targetResistanceDisplay.textContent = '';
+        if (requiredRodsCount) requiredRodsCount.textContent = '0';
+        if (arrangementDescription) arrangementDescription.textContent = '';
+        if (dimensionsInfo) dimensionsInfo.textContent = '';
+        if (recommendations) recommendations.innerHTML = '';
+        if (expectedResistance) expectedResistance.textContent = '0';
+        if (comparisonTable) comparisonTable.innerHTML = '';
+        if (arrangementDiagram) arrangementDiagram.innerHTML = '<p>유효한 값을 입력하세요</p>';
+        
+        // 결과 섹션 숨기기
+        if (resultSection) resultSection.style.display = 'none';
+    }
+    
+    // 토양 유형 선택 시 저항률 자동 입력
+    if (soilType && soilResistivity) {
+        soilType.addEventListener('change', function() {
+            if (this.value) {
+                soilResistivity.value = this.value;
+                calculateGroundingSystem(); // 실시간 업데이트
+            }
+        });
+    }
+    
+    // 모든 입력 요소에 대한 실시간 계산 이벤트 리스너 추가
+    document.querySelectorAll('.live-input').forEach(input => {
+        input.addEventListener('input', calculateGroundingSystem);
+        input.addEventListener('change', calculateGroundingSystem);
+    });
+    
+    // 계산 버튼 이벤트
+    if (calculateBtn) {
+        calculateBtn.addEventListener('click', calculateGroundingSystem);
+    }
+    
+    // 초기화 버튼 이벤트
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            // 입력 필드 초기화
+            if (soilResistivity) soilResistivity.value = '';
+            if (targetResistance) targetResistance.value = '';
+            if (rodSpacing) rodSpacing.value = '3';
+            if (soilType) soilType.selectedIndex = 0;
+            if (arrangementType) arrangementType.selectedIndex = 0;
+            
+            // 접지봉 목록 초기화
+            groundingRods = [];
+            renderRodList();
+            
+            // 제안 초기화
+            if (suggestionsContainer) suggestionsContainer.innerHTML = '';
+            
+            // 결과 초기화
+            clearResults();
+        });
+    }
+    
+    // 자동 추천 기능을 위한 입력 감시 함수
+    function watchInputsForAutoRecommend() {
+        if (!soilResistivity || !targetResistance || !suggestionsContainer) return;
+        
+        // 두 입력값의 변경을 감시
+        function checkInputs() {
+            const resistivity = parseFloat(soilResistivity.value);
+            const target = parseFloat(targetResistance.value);
+            
+            // 두 값이 모두 유효하고 접지봉이 없거나 아직 계산되지 않은 경우
+            if (!isNaN(resistivity) && !isNaN(target) && 
+                resistivity > 0 && target > 0 && 
+                (groundingRods.length === 0 || parseFloat(expectedResistance.textContent) === 0)) {
+                
+                // 자동 추천 버튼이 없으면 추가
+                if (!document.getElementById('auto-recommend-btn')) {
+                    const autoRecommendBox = document.createElement('div');
+                    autoRecommendBox.className = 'suggestion-box';
+                    autoRecommendBox.innerHTML = `
+                        <h4>자동 설계 추천</h4>
+                        <p>토양 저항률(${resistivity.toFixed(1)} Ω·m)과 목표 접지저항(${target.toFixed(1)} Ω)에 적합한 최적의 접지시스템을 자동으로 설계해드립니다.</p>
+                        <button id="auto-recommend-btn" class="add-suggestion">자동 설계 추천 받기</button>
+                    `;
+                    suggestionsContainer.innerHTML = '';
+                    suggestionsContainer.appendChild(autoRecommendBox);
+                    
+                    // 자동 추천 버튼에 이벤트 리스너 추가
+                    document.getElementById('auto-recommend-btn').addEventListener('click', function() {
+                        autoRecommendDesign(resistivity, target);
+                    });
+                }
+            }
+        }
+        
+        // 입력값 변경 감지
+        soilResistivity.addEventListener('input', checkInputs);
+        soilResistivity.addEventListener('change', checkInputs);
+        targetResistance.addEventListener('input', checkInputs);
+        targetResistance.addEventListener('change', checkInputs);
+        
+        // 초기 실행
+        checkInputs();
+    }
+    
+    // 단순하고 확실한 자동 설계 함수
+
+// 1. 목표 저항값 표시 수정 - 숫자 변환 오류 수정
+function calculateGroundingSystem() {
+    if (!soilResistivity || !targetResistance || !rodSpacing || !arrangementType || !resultSection) return;
+    
+    // 입력값 검증
+    if (groundingRods.length === 0) {
+        clearResults();
+        return;
+    }
+    
+    // 입력값 가져오기 - 문자열을 숫자로 정확히 변환
+    // parseFloat 대신 Number로 변환하여 정밀도 문제 해결
+    const resistivity = Number(soilResistivity.value);
+    const target = Number(targetResistance.value);
+    const spacing = Number(rodSpacing.value);
+    const arrangement = arrangementType.value;
+    
+    // 디버그 로그 출력
+    console.log(`계산 입력값: 저항률=${resistivity}, 목표저항=${target}, 간격=${spacing}`);
+    
+    // 유효성 검사
+    if (isNaN(resistivity) || isNaN(target) || isNaN(spacing) ||
+        resistivity <= 0 || target <= 0 || spacing <= 0) {
+        // 유효하지 않은 입력이 있으면 결과를 지우고 끝냄
+        clearResults();
+        return;
+    }
+    
+    // 개별 접지봉 저항 계산 및 표시
+    individualResistances.innerHTML = '<h4>개별 접지봉 저항값:</h4><ul>';
+    
+    let totalParallelResistance = 0;
+    let totalRods = 0;
+    
+    // 각 접지봉 유형별 저항 계산 및 디버그 정보
+    const rodResistances = [];
+    
+    groundingRods.forEach((rod, index) => {
+        // 단일 접지봉 저항 계산 (R = (ρ/2πL) * [ln(4L/d) - 1])
+        const length = rod.spec.length;
+        const diameter = rod.spec.diameter / 1000; // mm를 m로 변환
+        
+        // 계산 중간값 로깅
+        console.log(`접지봉 ${index+1}: 길이=${length}m, 직경=${diameter}m, 향상계수=${rod.enhancementFactor}`);
+        
+        let singleRodRes = (resistivity / (2 * Math.PI * length)) * (Math.log(4 * length / diameter) - 1);
+        singleRodRes *= rod.enhancementFactor; // 향상 계수 적용
+        
+        // 저항값 저장
+        rodResistances.push({
+            type: rod.type,
+            count: rod.count,
+            singleResistance: singleRodRes
+        });
+        
+        console.log(`접지봉 ${index+1} 단일 저항: ${singleRodRes.toFixed(2)}Ω`);
+        
+        // 병렬 저항 계산 (1/R_total = 1/R_1 + 1/R_2 + ...)
+        // 여러 개의 동일한 접지봉은 병렬로 계산 (각각의 개수만큼)
+        totalParallelResistance += (rod.count / singleRodRes);
+        totalRods += rod.count;
+        
+        individualResistances.innerHTML += `<li>${rod.spec.name} (${rod.count}개): ${singleRodRes.toFixed(2)} Ω</li>`;
+    });
+    
+    individualResistances.innerHTML += '</ul>';
+    
+    // 병렬 접지봉의 이론적 저항 (상호 영향 무시)
+    let theoreticalResistance = 0;
+    if (totalParallelResistance > 0) {
+        theoreticalResistance = 1 / totalParallelResistance;
+    }
+    
+    console.log(`이론적 병렬 저항(상호 영향 무시): ${theoreticalResistance.toFixed(2)}Ω`);
+    
+    // 결과값 표시 - 목표 저항값 표시 오류 수정
+    // 숫자 변환 후 표시 형식 수정
+    targetResistanceDisplay.textContent = target.toString();
+    
+    // 접지봉 개수별 저항 계산 (테이블 채우기)
+    comparisonTable.innerHTML = '';
+    
+    // 상호 영향 계수 계산 - 오류 수정
+    let mutualResistanceFactor = 1;
+    
+    if (totalRods > 1) {
+        // 상호 영향 계수 계산 완전히 새로운 접근법
+        // IEEE Standard 142-2007 (Green Book) 기반 수정된 계산식
+        let k = 0; // 상호 영향 계수
+        
+        // 배치 패턴에 따른 상호 영향 계수 결정
+        if (arrangement === 'line') {
+            k = 0.85; // 직선 배열 - 상호 영향 높음
+        } else if (arrangement === 'ring') {
+            k = 0.75; // 원형 배열 - 상호 영향 중간
+        } else if (arrangement === 'grid') {
+            k = 0.65; // 그리드 배열 - 상호 영향 낮음
+        }
+        
+        // 수정된 상호 영향 계산식
+        // 접지봉 수가 증가할수록 저항은 반드시 감소하도록 구성
+        const rodSpacingFactor = Math.min(1, spacing / 10); // 간격 영향 (10m에서 최대)
+        const rodCountFactor = (totalRods - 1) / totalRods; // 개수 영향
+        
+        // 상호 영향 계수: 1.0(영향 없음)보다 항상 큰 값을 가짐
+        // 그러나 너무 크지 않도록 제한하여 저항값이 낮게 유지되도록 함
+        mutualResistanceFactor = 1 + (k * rodCountFactor * (1 - rodSpacingFactor));
+        
+        // 오류 방지: 계수가 너무 크지 않도록 제한 (최대 1.5)
+        mutualResistanceFactor = Math.min(mutualResistanceFactor, 1.5);
+        
+        console.log(`상호 영향 계수: ${mutualResistanceFactor.toFixed(2)} (k=${k}, 간격=${spacing}m, 개수=${totalRods})`);
+    }
+    
+    // 최종 저항 계산 (상호 영향 고려)
+    // 상호 영향을 고려한 최종 저항은 이론적 저항보다 항상 크지만, 너무 크지 않도록 조정
+    const actualResistance = theoreticalResistance * mutualResistanceFactor;
+    
+    console.log(`최종 계산 저항: ${actualResistance.toFixed(2)}Ω (이론적 저항 ${theoreticalResistance.toFixed(2)}Ω × 상호 영향 계수 ${mutualResistanceFactor.toFixed(2)})`);
+    
+    // 테이블에 행 추가 (현재 구성)
+    const row = comparisonTable.insertRow();
+    
+    const cellCount = row.insertCell(0);
+    cellCount.textContent = totalRods;
+    
+    const cellResistance = row.insertCell(1);
+    cellResistance.textContent = actualResistance.toFixed(2);
+    
+    const cellAchieved = row.insertCell(2);
+    if (actualResistance <= target) {
+        cellAchieved.textContent = '✓ 달성';
+        cellAchieved.style.color = 'green';
+    } else {
+        cellAchieved.textContent = '✗ 미달성';
+        cellAchieved.style.color = 'red';
+    }
+    
+    // 현재 구성 강조
+    row.style.backgroundColor = '#e8f5e9';
+    row.style.fontWeight = 'bold';
+    
+    // 결과 업데이트
+    requiredRodsCount.textContent = totalRods;
+    expectedResistance.textContent = actualResistance.toFixed(2);
+    
+    // 배치 설명 및 치수 정보 업데이트
+    let arrangementText = '';
+    let dimensionsText = '';
+    
+    if (arrangement === 'line') {
+        const totalLength = (totalRods - 1) * spacing;
+        arrangementText = `접지봉 ${totalRods}개를 ${spacing}m 간격으로 직선으로 배치하세요.`;
+        dimensionsText = `총 설치 길이: ${totalLength.toFixed(1)}m, 필요 부지 면적: ${totalLength.toFixed(1)}m × 1m = ${totalLength.toFixed(1)}m²`;
+    } else if (arrangement === 'ring') {
+        const circumference = spacing * totalRods;
+        const radius = circumference / (2 * Math.PI);
+        const area = Math.PI * radius * radius;
+        arrangementText = `접지봉 ${totalRods}개를 ${spacing}m 간격으로 원형으로 배치하세요.`;
+        dimensionsText = `원의 반지름: ${radius.toFixed(1)}m, 둘레: ${circumference.toFixed(1)}m, 필요 부지 면적: ${area.toFixed(1)}m²`;
+    } else if (arrangement === 'grid') {
+        const gridSize = Math.ceil(Math.sqrt(totalRods));
+        const side = (gridSize - 1) * spacing;
+        const area = side * side;
+        arrangementText = `접지봉 ${totalRods}개를 ${spacing}m 간격으로 ${gridSize}×${gridSize} 그리드로 배치하세요.`;
+        dimensionsText = `그리드 한 변 길이: ${side.toFixed(1)}m, 필요 부지 면적: ${area.toFixed(1)}m²`;
+    }
+    
+    arrangementDescription.textContent = arrangementText;
+    dimensionsInfo.textContent = dimensionsText;
+    
+    // 배치 다이어그램 업데이트 - SVG 그래픽으로 표시
+    updateArrangementDiagram(arrangement, totalRods, spacing);
+    
+    // 권장사항 업데이트
+    let rodTypeList = '';
+    groundingRods.forEach(rod => {
+        rodTypeList += `<li>${rod.spec.name} ${rod.count}개를 사용하세요.</li>`;
+    });
+    
+    // 일반 권장사항
+    recommendations.innerHTML = `
+        <ul>
+            ${rodTypeList}
+            <li>접지봉은 ${spacing}m 간격으로 배치하세요. 간격이 너무 좁으면 상호 간섭이 증가합니다.</li>
+            <li>모든 접지봉은 적절한 크기의 접지선으로 연결하세요(일반적으로 최소 35mm² 구리 도체).</li>
+            <li>접지봉과 접지선의 연결부는 용접 또는 압착으로 처리하고 부식 방지 처리를 하세요.</li>
+            <li>설치 후 계절별로 접지저항을 측정하여 변화를 모니터링하세요(특히 건기).</li>
+        </ul>
+    `;
+    
+    // 목표 달성 여부에 따른 추가 권장사항
+    if (actualResistance > target) {
+        recommendations.innerHTML += `
+            <p><strong>주의:</strong> 현재 설계로는 목표 접지저항을 달성하지 못합니다. 접지봉을 추가하거나 더 효과적인 유형의 접지봉을 사용하세요.</p>
+        `;
+        
+        // 목표 미달성 시 제안 생성
+        generateSuggestion();
+    } else {
+        // 목표 달성 시 제안 숨기기
+        suggestionsContainer.innerHTML = '';
+    }
+    
+    // 결과 섹션 표시
+    resultSection.style.display = 'block';
+    
+    console.log('계산 완료: 총 접지봉 수 ' + totalRods + '개, 최종 저항값 ' + actualResistance.toFixed(2) + 'Ω');
+}
+
+// 2. 자동 설계 함수에도 동일한 수정 적용
+// 완전히 수정된 autoRecommendDesign 함수
+function autoRecommendDesign(resistivity, target) {
+    // 입력값 그대로 유지 (문자열 원형)
+    const resistivityStr = resistivity.toString();
+    const targetStr = target.toString();
+    
+    // 원본 입력값 로깅
+    console.log(`자동 설계 원본 입력값: 토양 저항률=${resistivityStr}, 목표 저항=${targetStr}`);
+    
+    // 숫자로 변환 (계산용)
+    const resistivityNum = Number(resistivity);
+    const targetNum = Number(target);
+    
+    console.log(`자동 설계 변환 후 숫자: 토양 저항률=${resistivityNum}, 목표 저항=${targetNum}`);
+    
+    // 기존 접지봉 초기화
+    groundingRods = [];
+    
+    // 1. 유효한 접지봉 유형 결정 (토양 저항률에 따라)
+    const validRodTypes = [];
+    
+    if (resistivityNum > 1000) {
+        // 매우 높은 저항률 - 모든 유형 가능하지만 효율성 순위 조정
+        validRodTypes.push(
+            { type: 'carbon', specIndex: randomInt(2, 4), effectiveness: 10, name: '탄소봉' },
+            { type: 'enhanced', specIndex: randomInt(2, 5), effectiveness: 7, name: '향상된 접지재' },
+            { type: 'deep', specIndex: randomInt(2, 6), effectiveness: 8, name: '심타 접지봉' },
+            { type: 'concrete', specIndex: randomInt(1, 3), effectiveness: 6, name: '콘크리트 접지봉' },
+            { type: 'standard', specIndex: randomInt(2, 3), effectiveness: 4, name: '표준 접지봉' }
+        );
+    } else if (resistivityNum > 500) {
+        // 높은 저항률
+        validRodTypes.push(
+            { type: 'carbon', specIndex: randomInt(1, 4), effectiveness: 9, name: '탄소봉' },
+            { type: 'enhanced', specIndex: randomInt(1, 4), effectiveness: 8, name: '향상된 접지재' },
+            { type: 'deep', specIndex: randomInt(1, 5), effectiveness: 7, name: '심타 접지봉' },
+            { type: 'concrete', specIndex: randomInt(0, 3), effectiveness: 6, name: '콘크리트 접지봉' },
+            { type: 'standard', specIndex: randomInt(1, 3), effectiveness: 5, name: '표준 접지봉' }
+        );
+    } else if (resistivityNum > 200) {
+        // 중간 저항률
+        validRodTypes.push(
+            { type: 'enhanced', specIndex: randomInt(1, 3), effectiveness: 8, name: '향상된 접지재' },
+            { type: 'carbon', specIndex: randomInt(0, 3), effectiveness: 7, name: '탄소봉' },
+            { type: 'standard', specIndex: randomInt(1, 3), effectiveness: 6, name: '표준 접지봉' },
+            { type: 'concrete', specIndex: randomInt(0, 2), effectiveness: 5, name: '콘크리트 접지봉' },
+            { type: 'deep', specIndex: randomInt(0, 4), effectiveness: 5, name: '심타 접지봉' }
+        );
+    } else {
+        // 낮은 저항률
+        validRodTypes.push(
+            { type: 'standard', specIndex: randomInt(1, 3), effectiveness: 8, name: '표준 접지봉' },
+            { type: 'enhanced', specIndex: randomInt(0, 3), effectiveness: 7, name: '향상된 접지재' },
+            { type: 'carbon', specIndex: randomInt(0, 2), effectiveness: 6, name: '탄소봉' },
+            { type: 'concrete', specIndex: randomInt(0, 2), effectiveness: 5, name: '콘크리트 접지봉' },
+            { type: 'deep', specIndex: randomInt(0, 3), effectiveness: 4, name: '심타 접지봉' }
+        );
+    }
+    
+    // 랜덤 요소 추가: 항상 동일한 조합이 아닌 다양한 조합 생성
+    // 효율성에 약간의 랜덤 변동 추가
+    validRodTypes.forEach(rod => {
+        rod.effectiveness += randomInt(-2, 2); // -2 ~ +2 범위의 랜덤 변동
+    });
+    
+    // 효율성 순으로 재정렬
+    validRodTypes.sort((a, b) => b.effectiveness - a.effectiveness);
+    
+    // 2. 배치 패턴 및 간격 - 고정으로 그리드 사용 (가장 효율적)
+    // 높은 목표 저항에는 직선 또는 원형 패턴 랜덤 선택
+    let patternStr, spacingVal;
+    
+    if (targetNum > 50) {
+        // 높은 목표 저항 - 단순한 배치로도 충분
+        const patterns = ['line', 'ring'];
+        patternStr = patterns[randomInt(0, 1)];
+        spacingVal = randomFloat(2.5, 4.0);
+    } else if (targetNum > 20) {
+        // 중간 목표 저항 - 원형 배열
+        patternStr = 'ring';
+        spacingVal = randomFloat(3.0, 4.0);
+    } else {
+        // 낮은 목표 저항 - 반드시 그리드 배열
+        patternStr = 'grid';
+        spacingVal = randomFloat(3.0, 4.0);
+    }
+    
+    // 설정값 적용
+    if (rodSpacing) rodSpacing.value = spacingVal.toFixed(1);
+    if (arrangementType) arrangementType.value = patternStr;
+    
+    // 3. 목표 저항에 따라 접근법 선택
+    let targetApproach;
+    if (targetNum > 100) {
+        // 매우 높은 목표 저항 - 단일 접지봉 및 단순 조합
+        targetApproach = 0;
+    } else if (targetNum > 30) {
+        // 중간 목표 저항 - 단일 또는 이중 유형
+        targetApproach = randomInt(0, 1);
+    } else {
+        // 낮은 목표 저항 - 완전 랜덤 접근
+        targetApproach = randomInt(0, 2);
+    }
+    
+    // 4. 선택된 방식에 따라 점진적 접근
+    let currentResistance;
+    let totalRodCount = 0;
+    const maxTotalCount = 10; // 최대 총 접지봉 개수
+    
+    // 단일 접지봉으로 시작해서 저항 계산
+    const firstType = validRodTypes[0]; // 가장 효과적인 유형
+    
+    // 단일 접지봉 테스트
+    groundingRods = [];
+    addRod(firstType.type, firstType.specIndex, 1);
+    calculateGroundingSystem();
+    currentResistance = Number(expectedResistance.textContent);
+    
+    console.log(`단일 접지봉 테스트: ${firstType.name} 1개 → 저항 ${currentResistance.toFixed(2)}Ω`);
+    
+    // 목표 달성 확인
+    if (currentResistance <= targetNum) {
+        console.log(`단일 접지봉으로 목표 달성: ${currentResistance.toFixed(2)}Ω ≤ ${targetNum}Ω`);
+        totalRodCount = 1;
+    } else {
+        // 추가 접지봉 필요
+        // 저항 감소율을 보수적으로 계산 (병렬 저항보다 약간 낮은 효과로 예측)
+        const reductionFactor = 0.75; // 접지봉 추가 시 75% 효과만 반영한다고 가정
+        const predictedCount = Math.ceil(currentResistance / (targetNum * 1.05) / reductionFactor);
+        console.log(`예상 필요 접지봉 수: ${predictedCount}개 (저항 감소율 ${reductionFactor * 100}% 가정)`);
+        
+        if (targetApproach === 0 || predictedCount <= 2) {
+            // 단일 유형으로 접근
+            const estimatedCount = Math.min(predictedCount, maxTotalCount);
+            
+            groundingRods = [];
+            addRod(firstType.type, firstType.specIndex, estimatedCount);
+            calculateGroundingSystem();
+            currentResistance = Number(expectedResistance.textContent);
+            
+            console.log(`단일 유형 접근: ${firstType.name} ${estimatedCount}개 → 저항 ${currentResistance.toFixed(2)}Ω`);
+            
+            // 목표 달성 확인 및 필요시 추가 보정
+            if (currentResistance <= targetNum) {
+                totalRodCount = estimatedCount;
+                
+                // 최적화 시도 (개수 줄이기 가능한지)
+                if (estimatedCount > 1) {
+                    const optimizedCount = estimatedCount - 1;
+                    groundingRods = [];
+                    addRod(firstType.type, firstType.specIndex, optimizedCount);
+                    calculateGroundingSystem();
+                    const testResistance = Number(expectedResistance.textContent);
+                    
+                    if (testResistance <= targetNum) {
+                        totalRodCount = optimizedCount;
+                        currentResistance = testResistance;
+                        console.log(`최적화 성공: ${firstType.name} ${optimizedCount}개로 줄여도 목표 달성 (${testResistance.toFixed(2)}Ω)`);
+                    } else {
+                        groundingRods = [];
+                        addRod(firstType.type, firstType.specIndex, estimatedCount);
+                        calculateGroundingSystem();
+                    }
+                }
+            } else if (estimatedCount < maxTotalCount) {
+                // 예측보다 더 많은 접지봉 필요
+                const increasedCount = estimatedCount + 1;
+                groundingRods = [];
+                addRod(firstType.type, firstType.specIndex, increasedCount);
+                calculateGroundingSystem();
+                currentResistance = Number(expectedResistance.textContent);
+                
+                if (currentResistance <= targetNum) {
+                    totalRodCount = increasedCount;
+                    console.log(`추가 접지봉으로 목표 달성: ${firstType.name} ${increasedCount}개 → ${currentResistance.toFixed(2)}Ω`);
+                }
+            }
+        } else if (targetApproach === 1 && validRodTypes.length > 1) {
+            // 두 가지 유형 혼합
+            const secondType = validRodTypes[1];
+            
+            // 첫 번째 유형 2개 + 두 번째 유형 1개로 시작
+            groundingRods = [];
+            addRod(firstType.type, firstType.specIndex, 2);
+            addRod(secondType.type, secondType.specIndex, 1);
+            calculateGroundingSystem();
+            currentResistance = Number(expectedResistance.textContent);
+            
+            console.log(`두 가지 유형 혼합: ${firstType.name} 2개 + ${secondType.name} 1개 → ${currentResistance.toFixed(2)}Ω`);
+            
+            if (currentResistance <= targetNum) {
+                totalRodCount = 3;
+                
+                // 최적화 시도 (첫 번째 유형 1개 + 두 번째 유형 1개)
+                groundingRods = [];
+                addRod(firstType.type, firstType.specIndex, 1);
+                addRod(secondType.type, secondType.specIndex, 1);
+                calculateGroundingSystem();
+                const testResistance = Number(expectedResistance.textContent);
+                
+                if (testResistance <= targetNum) {
+                    totalRodCount = 2;
+                    currentResistance = testResistance;
+                    console.log(`최적화 성공: ${firstType.name} 1개 + ${secondType.name} 1개로 목표 달성 (${testResistance.toFixed(2)}Ω)`);
+                } else {
+                    groundingRods = [];
+                    addRod(firstType.type, firstType.specIndex, 2);
+                    addRod(secondType.type, secondType.specIndex, 1);
+                    calculateGroundingSystem();
+                }
+            }
+        } else if (targetApproach === 2 && validRodTypes.length > 2) {
+            // 세 가지 유형 혼합
+            const secondType = validRodTypes[1];
+            const thirdType = validRodTypes[2];
+            
+            groundingRods = [];
+            addRod(firstType.type, firstType.specIndex, 2);
+            addRod(secondType.type, secondType.specIndex, 1);
+            addRod(thirdType.type, thirdType.specIndex, 1);
+            calculateGroundingSystem();
+            currentResistance = Number(expectedResistance.textContent);
+            
+            console.log(`세 가지 유형 혼합: ${firstType.name} 2개 + ${secondType.name} 1개 + ${thirdType.name} 1개 → ${currentResistance.toFixed(2)}Ω`);
+            
+            if (currentResistance <= targetNum) {
+                totalRodCount = 4;
+            }
+        }
+    }
+    
+    // 5. 목표 미달성 시 백업 방법 시도
+    if (currentResistance > targetNum) {
+        console.log(`목표 미달성 (${currentResistance.toFixed(2)}Ω > ${targetNum}Ω), 백업 방법 시도`);
+        
+        // 백업 방법 1: 가장 효과적인 유형 5개
+        groundingRods = [];
+        addRod(validRodTypes[0].type, validRodTypes[0].specIndex, 5);
+        calculateGroundingSystem();
+        currentResistance = Number(expectedResistance.textContent);
+        
+        console.log(`백업 방법 1: ${validRodTypes[0].name} 5개 → ${currentResistance.toFixed(2)}Ω`);
+        
+        // 여전히 목표 미달성 시 강력한 혼합 구성
+        if (currentResistance > targetNum) {
+            // 가장 효과적인 유형 3개 + 두 번째 유형 2개 + 심타 접지봉 1개
+            groundingRods = [];
+            addRod(validRodTypes[0].type, validRodTypes[0].specIndex, 3);
+            
+            if (validRodTypes.length > 1) {
+                addRod(validRodTypes[1].type, validRodTypes[1].specIndex, 2);
+            }
+            
+            // 심타 접지봉이 포함되어 있지 않다면 추가
+            if (!groundingRods.some(rod => rod.type === 'deep')) {
+                addRod('deep', 5, 1);
+            }
+            
+            calculateGroundingSystem();
+            currentResistance = Number(expectedResistance.textContent);
+            
+            console.log(`백업 방법 2: 혼합 구성 → ${currentResistance.toFixed(2)}Ω`);
+            
+            // 최후의 수단 - 모든 유형 최대 구성
+            if (currentResistance > targetNum) {
+                groundingRods = [];
+                addRod('carbon', 4, 3);
+                addRod('deep', 6, 2);
+                addRod('enhanced', 5, 3);
+                
+                calculateGroundingSystem();
+                currentResistance = Number(expectedResistance.textContent);
+                
+                console.log(`최후 방법: 최대 구성 → ${currentResistance.toFixed(2)}Ω`);
+            }
+        }
+    }
+    
+    // 6. 최종 결과 확인
+    currentResistance = Number(expectedResistance.textContent);
+    
+    // 7. 결과 안내 메시지 추가
+    const recommendInfoBox = document.createElement('div');
+    recommendInfoBox.className = 'suggestion-box';
+    
+    // 총 접지봉 수와 유형 요약
+    let totalRods = 0;
+    let rodSummary = groundingRods.map(rod => {
+        totalRods += rod.count;
+        const typeName = rod.type === 'standard' ? '표준' : 
+                      (rod.type === 'carbon' ? '탄소' : 
+                       (rod.type === 'enhanced' ? '향상된 접지재' : 
+                        (rod.type === 'concrete' ? '콘크리트' : '심타')));
+        return `${typeName} 접지봉 ${rod.count}개`;
+    }).join(', ');
+    
+    if (currentResistance <= targetNum) {
+        // 목표 접지저항 달성
+        recommendInfoBox.style.backgroundColor = '#e8f5e9';
+        
+        recommendInfoBox.innerHTML = `
+            <h4>자동 설계 완료</h4>
+            <p>토양 저항률(${resistivityNum.toFixed(1)} Ω·m)과 목표 접지저항(${targetStr} Ω)에 적합한 접지시스템을 설계했습니다:</p>
+            <p><strong>권장 구성:</strong> ${rodSummary} (총 ${totalRods}개)</p>
+            <p><strong>배치:</strong> ${patternStr === 'grid' ? '그리드' : (patternStr === 'ring' ? '원형' : '직선')} 배열, ${spacingVal.toFixed(1)}m 간격</p>
+            <p>예상 접지저항: <strong>${currentResistance.toFixed(2)} Ω</strong> (목표: ${targetStr} Ω 이하) ✓</p>
+        `;
+    } else {
+        // 목표 달성 실패 (매우 어려운 조건)
+        recommendInfoBox.style.backgroundColor = '#ffebee';
+        
+        recommendInfoBox.innerHTML = `
+            <h4>자동 설계 완료 (주의)</h4>
+            <p>토양 저항률(${resistivityNum.toFixed(1)} Ω·m)이 매우 높거나 목표 접지저항(${targetStr} Ω)이 매우 낮아 표준 방법으로 목표 달성이 어렵습니다.</p>
+            <p><strong>현재 구성:</strong> ${rodSummary} (총 ${totalRods}개)</p>
+            <p>현재 예상 접지저항: <strong>${currentResistance.toFixed(2)} Ω</strong> (목표: ${targetStr} Ω)</p>
+            <p>다음 특수 접지 방법을 고려하세요:</p>
+            <ul>
+                <li>메쉬 접지망 구성 (넓은 면적에 그리드 형태의 접지선 매설)</li>
+                <li>화학적 토양 처리 (넓은 면적에 토양 저항률 감소제 처리)</li>
+                <li>더 깊은 심타 접지정(50m 이상) 설치 검토</li>
+            </ul>
+        `;
+    }
+    
+    suggestionsContainer.innerHTML = '';
+    suggestionsContainer.appendChild(recommendInfoBox);
+    
+    console.log(`자동 설계 완료: 최종 저항 ${currentResistance.toFixed(2)}Ω (목표: ${targetStr}Ω)`);
+}
+
+
+// 랜덤 정수 생성 함수 (min 이상, max 이하)
+function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// 랜덤 실수 생성 함수 (min 이상, max 미만)
+function randomFloat(min, max) {
+    return min + Math.random() * (max - min);
+}
+
+// 결과 초기화 함수
+function clearResults() {
+    if (individualResistances) individualResistances.innerHTML = '';
+    if (targetResistanceDisplay) targetResistanceDisplay.textContent = '';
+    if (requiredRodsCount) requiredRodsCount.textContent = '0';
+    if (arrangementDescription) arrangementDescription.textContent = '';
+    if (dimensionsInfo) dimensionsInfo.textContent = '';
+    if (recommendations) recommendations.innerHTML = '';
+    if (expectedResistance) expectedResistance.textContent = '0';
+    if (comparisonTable) comparisonTable.innerHTML = '';
+    if (arrangementDiagram) arrangementDiagram.innerHTML = '<p>유효한 값을 입력하세요</p>';
+    
+    // 결과 섹션 숨기기
+    if (resultSection) resultSection.style.display = 'none';
+}
+
+// 초기화 및 이벤트 리스너 설정
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM 요소
+    const soilType = document.getElementById('soil-type');
+    const soilResistivity = document.getElementById('soil-resistivity');
+    const targetResistance = document.getElementById('target-resistance');
+    const rodSpacing = document.getElementById('rod-spacing');
+    const arrangementType = document.getElementById('arrangement-type');
+    const calculateBtn = document.getElementById('calculate-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const resultSection = document.getElementById('result-section');
+    const rodList = document.getElementById('rod-list');
+    const addRodBtn = document.getElementById('add-rod-btn');
+    const suggestionsContainer = document.getElementById('suggestions-container');
+    
+    // 결과 관련 DOM 요소
+    const individualResistances = document.getElementById('individual-resistances');
+    const targetResistanceDisplay = document.getElementById('target-resistance-display');
+    const requiredRodsCount = document.getElementById('required-rods-count');
+    const arrangementDescription = document.getElementById('arrangement-description');
+    const arrangementDiagram = document.getElementById('arrangement-diagram');
+    const dimensionsInfo = document.getElementById('dimensions-info');
+    const recommendations = document.getElementById('recommendations');
+    const expectedResistance = document.getElementById('expected-resistance');
+    const comparisonTable = document.getElementById('comparison-table')?.getElementsByTagName('tbody')[0];
+    
+    // 탭 전환 기능 설정
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            
+            // 모든 탭 비활성화
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // 선택한 탭 활성화
+            this.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            // 계산기 탭이 아닌 경우 하단 버튼 숨기기
+            if (tabId === 'calculator-tab') {
+                document.querySelector('.fixed-bottom').style.display = 'block';
+            } else {
+                document.querySelector('.fixed-bottom').style.display = 'none';
+            }
+        });
+    });
+    
+    // KEC 기준 검색 기능 설정
+    const kecSearch = document.getElementById('kec-search');
+    const kecSearchBtn = document.getElementById('kec-search-btn');
+    
+    if (kecSearchBtn && kecSearch) {
+        kecSearchBtn.addEventListener('click', searchKecStandards);
+        kecSearch.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchKecStandards();
+            }
+        });
+    }
+    
+    function searchKecStandards() {
+        const searchText = kecSearch.value.toLowerCase();
+        const kecTable = document.getElementById('kec-standards-table');
+        if (!kecTable) return;
+        
+        const rows = kecTable.getElementsByTagName('tr');
+        
+        for (let i = 0; i < rows.length; i++) {
+            if (rows[i].classList.contains('kec-cat')) continue; // 카테고리 행은 항상 표시
+            
+            const cells = rows[i].getElementsByTagName('td');
+            let found = false;
+            
+            for (let j = 0; j < cells.length; j++) {
+                const cellText = cells[j].textContent.toLowerCase();
+                
+                if (cellText.includes(searchText)) {
+                    found = true;
+                    break;
+                }
+            }
+            
+            rows[i].style.display = found ? '' : 'none';
+            if (found) {
+                rows[i].classList.add('highlight-row');
+            } else {
+                rows[i].classList.remove('highlight-row');
+            }
+        }
+    }
+    
+    // 토양 유형 선택 시 저항률 자동 입력
+    if (soilType && soilResistivity) {
+        soilType.addEventListener('change', function() {
+            if (this.value) {
+                soilResistivity.value = this.value;
+                calculateGroundingSystem(); // 실시간 업데이트
+            }
+        });
+    }
+    
+    // 모든 입력 요소에 대한 실시간 계산 이벤트 리스너 추가
+    document.querySelectorAll('.live-input').forEach(input => {
+        input.addEventListener('input', calculateGroundingSystem);
+        input.addEventListener('change', calculateGroundingSystem);
+    });
+    
+    // 계산 버튼 이벤트
+    if (calculateBtn) {
+        calculateBtn.addEventListener('click', calculateGroundingSystem);
+    }
+    
+    // 초기화 버튼 이벤트
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            // 입력 필드 초기화
+            if (soilResistivity) soilResistivity.value = '';
+            if (targetResistance) targetResistance.value = '';
+            if (rodSpacing) rodSpacing.value = '3';
+            if (soilType) soilType.selectedIndex = 0;
+            if (arrangementType) arrangementType.selectedIndex = 0;
+            
+            // 접지봉 목록 초기화
+            groundingRods = [];
+            renderRodList();
+            
+            // 제안 초기화
+            if (suggestionsContainer) suggestionsContainer.innerHTML = '';
+            
+            // 결과 초기화
+            clearResults();
+        });
+    }
+    
+    // 자동 추천 기능 활성화
+    watchInputsForAutoRecommend();
+    
+    // 목표 저항값 입력 처리 설정 추가
+    setupTargetResistanceInput();
+    
+    // 초기 접지봉 목록 렌더링
+    renderRodList();
+});
+
+// 자동 추천 계산 기능을 위한 입력 감시 함수
+function watchInputsForAutoRecommend() {
+    const soilResistivity = document.getElementById('soil-resistivity');
+    const targetResistance = document.getElementById('target-resistance');
+    const suggestionsContainer = document.getElementById('suggestions-container');
+    const expectedResistance = document.getElementById('expected-resistance');
+    
+    if (!soilResistivity || !targetResistance || !suggestionsContainer) return;
+    
+    // 두 입력값의 변경을 감시
+    function checkInputs() {
+        const resistivity = Number(soilResistivity.value);
+        const target = Number(targetResistance.value);
+        
+        // 두 값이 모두 유효하고 접지봉이 없거나 아직 계산되지 않은 경우
+        if (!isNaN(resistivity) && !isNaN(target) && 
+            resistivity > 0 && target > 0 && 
+            (groundingRods.length === 0 || Number(expectedResistance.textContent) === 0)) {
+            
+            // 자동 추천 버튼이 없으면 추가
+            if (!document.getElementById('auto-recommend-btn')) {
+                const autoRecommendBox = document.createElement('div');
+                autoRecommendBox.className = 'suggestion-box';
+                autoRecommendBox.innerHTML = `
+                    <h4>자동 설계 추천</h4>
+                    <p>토양 저항률(${resistivity.toFixed(1)} Ω·m)과 목표 접지저항(${targetResistance.value} Ω)에 적합한 최적의 접지시스템을 자동으로 설계해드립니다.</p>
+                    <button id="auto-recommend-btn" class="add-suggestion">자동 설계 추천 받기</button>
+                `;
+                suggestionsContainer.innerHTML = '';
+                suggestionsContainer.appendChild(autoRecommendBox);
+                
+                // 자동 추천 버튼에 이벤트 리스너 추가
+                document.getElementById('auto-recommend-btn').addEventListener('click', function() {
+                    autoRecommendDesign(resistivity, targetResistance.value);
+                });
+            }
+        }
+    }
+    
+    // 입력값 변경 감지
+    soilResistivity.addEventListener('input', checkInputs);
+    soilResistivity.addEventListener('change', checkInputs);
+    targetResistance.addEventListener('input', checkInputs);
+    targetResistance.addEventListener('change', checkInputs);
+    
+    // 초기 실행
+    checkInputs();
+}
+
+
+    // 설계 제안 함수
+    function generateSuggestion() {
+        if (!soilResistivity || !targetResistance || !suggestionsContainer) return;
+        
+        const resistivity = parseFloat(soilResistivity.value);
+        const target = parseFloat(targetResistance.value);
+        
+        if (isNaN(resistivity) || isNaN(target) || resistivity <= 0 || target <= 0) {
+            suggestionsContainer.innerHTML = '';
+            return;
+        }
+        
+        // 현재 설계의 예상 저항값 계산
+        const actualResistance = parseFloat(expectedResistance.textContent);
+        
+        // 목표 저항을 달성하지 못하는 경우 추가 제안
+        if (actualResistance > target && groundingRods.length > 0) {
+            suggestionsContainer.innerHTML = '';
+            
+            // 제안 박스 생성
+            const suggestionBox = document.createElement('div');
+            suggestionBox.className = 'suggestion-box';
+            
+            // 현재 설계가 목표에 도달하지 못함을 표시
+            const suggestionTitle = document.createElement('h4');
+            suggestionTitle.textContent = '현재 설계로는 목표 접지저항을 달성할 수 없습니다';
+            suggestionBox.appendChild(suggestionTitle);
+            
+            const suggestionText = document.createElement('p');
+            suggestionText.innerHTML = `현재 설계의 예상 접지저항: <strong>${actualResistance.toFixed(2)} Ω</strong> (목표: ${target} Ω)`;
+            suggestionBox.appendChild(suggestionText);
+            
+            // 개선 방법 제안
+            const suggestionList = document.createElement('ul');
+            
+            // 1. 탄소봉 추가 제안 (가장 효과적)
+            if (!groundingRods.some(rod => rod.type === 'carbon')) {
+                const carbonLi = document.createElement('li');
+                carbonLi.innerHTML = `
+                    <strong>탄소봉 추가:</strong> 탄소봉은 표준 접지봉보다 저항이 낮아 효과적입니다.
+                    <button class="add-suggestion" data-type="carbon" data-spec="0" data-count="1">탄소봉 1개 추가</button>
+                `;
+                suggestionList.appendChild(carbonLi);
+            }
+            
+            // 2. 향상된 접지재 추가 제안
+            if (!groundingRods.some(rod => rod.type === 'enhanced')) {
+                const enhancedLi = document.createElement('li');
+                enhancedLi.innerHTML = `
+                    <strong>향상된 접지재 추가:</strong> GEM이나 벤토나이트 처리 접지봉으로 저항을 크게 낮출 수 있습니다.
+                    <button class="add-suggestion" data-type="enhanced" data-spec="0" data-count="1">향상된 접지봉 1개 추가</button>
+                `;
+                suggestionList.appendChild(enhancedLi);
+            }
+            
+            suggestionBox.appendChild(suggestionList);
+            suggestionsContainer.appendChild(suggestionBox);
+            
+            // 제안 버튼에 이벤트 리스너 추가
+            document.querySelectorAll('.add-suggestion').forEach(button => {
+                button.addEventListener('click', function() {
+                    const type = this.getAttribute('data-type');
+                    const specIndex = parseInt(this.getAttribute('data-spec') || 0);
+                    const count = parseInt(this.getAttribute('data-count') || 1);
+                    
+                    if (type) {
+                        // 새 접지봉 추가
+                        addRod(type, specIndex, count);
+                        suggestionsContainer.innerHTML = '';
+                    }
+                });
+            });
+        }
+    }
+    
+    // 초기 설정 - 탭 관련 스크립트 실행과 자동 추천 기능 활성화
+    watchInputsForAutoRecommend();
+});
+
+
+
+
+    </script>
+</body>
+</html>
