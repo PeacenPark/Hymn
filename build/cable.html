@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>케이블 계산기</title>
+  <style>
+    :root {
+      --primary-color: #1a73e8;
+      --accent-color: #0056b3;
+      --background: #f5f7fa;
+      --text: #333;
+      --border: #ddd;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --gray: #6b7280;
+      --light-gray: #e5e7eb;
+    }
+    * { 
+      box-sizing: border-box; 
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--background);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      background: var(--primary-color);
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      font-weight: 600;
+      flex-grow: 1;
+      text-align: center;
+    }
+    .back-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      padding: 5px;
+      cursor: pointer;
+    }
+    .calculator {
+      flex-grow: 1;
+      padding: 16px;
+    }
+    
+    /* 탭 스타일 */
+    .tabs {
+      display: flex;
+      margin-bottom: 16px;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 14px 5px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      position: relative;
+      color: var(--gray);
+      transition: all 0.3s ease;
+    }
+    .tab.active {
+      color: var(--primary-color);
+    }
+    .tab-indicator {
+      height: 3px;
+      width: 100%;
+      background: var(--primary-color);
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    .tab.active .tab-indicator {
+      transform: scaleX(1);
+    }
+    .tab-icon {
+      margin-bottom: 6px;
+      display: block;
+      margin: 0 auto 5px;
+    }
+    
+    /* 탭 콘텐츠 */
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    /* 입력 그룹 스타일 */
+    .input-group {
+      background: white;
+      border-radius: 12px;
+      padding: 18px 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .input-group:last-of-type {
+      margin-bottom: 24px;
+    }
+    .input-label {
+      display: block;
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 8px;
+      color: #333;
+    }
+    .select-wrapper {
+      position: relative;
+    }
+    .select-wrapper::after {
+      content: "";
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 10px;
+      height: 10px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a73e8'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      pointer-events: none;
+    }
+    select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fafafa;
+      font-size: 1rem;
+      appearance: none;
+      -webkit-appearance: none;
+      color: #333;
+    }
+    select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+    }
+    
+    /* 숫자 입력 필드 스타일 */
+    .input-field {
+      display: flex;
+      align-items: center;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #fafafa;
+      overflow: hidden;
+    }
+    .input-field input {
+      flex: 1;
+      border: none;
+      padding: 14px 16px;
+      font-size: 1rem;
+      background: transparent;
+    }
+    .input-field input:focus {
+      outline: none;
+    }
+    .input-field .unit {
+      padding: 0 16px;
+      color: var(--gray);
+      font-weight: 500;
+      font-size: 0.95rem;
+      background: var(--light-gray);
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+    .input-field-label {
+      font-weight: normal;
+      font-size: 0.85rem;
+      color: var(--gray);
+      margin-top: 8px;
+    }
+    
+    /* 라디오 버튼 그룹 */
+    .radio-group {
+      display: flex;
+      margin-top: 8px;
+    }
+    .radio-button {
+      flex: 1;
+      position: relative;
+    }
+    .radio-button input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .radio-label {
+      display: block;
+      text-align: center;
+      padding: 12px 8px;
+      border: 1px solid var(--border);
+      background: #fafafa;
+      color: var(--gray);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .radio-button:first-child .radio-label {
+      border-radius: 8px 0 0 8px;
+    }
+    .radio-button:last-child .radio-label {
+      border-radius: 0 8px 8px 0;
+    }
+    .radio-button input:checked + .radio-label {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+    
+    /* 버튼 스타일 */
+    .button {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .button:hover {
+      background: var(--accent-color);
+    }
+    
+    /* 결과 컨테이너 스타일 */
+    .result-container {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+    }
+    .result-header {
+      background: var(--primary-color);
+      color: white;
+      padding: 14px 16px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+    }
+    .result-header svg {
+      margin-right: 8px;
+    }
+    .result-content {
+      padding: 16px;
+    }
+    .result-row {
+      margin-bottom: 20px;
+    }
+    .result-row:last-child {
+      margin-bottom: 0;
+    }
+    .result-label {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #555;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+    }
+    .result-label svg {
+      margin-right: 6px;
+      flex-shrink: 0;
+    }
+    .result-value {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #333;
+    }
+    .result-value.highlight {
+      color: var(--primary-color);
+      font-size: 1.2rem;
+    }
+    .result-note {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+    .reference {
+      background: #f0f4ff;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 0.85rem;
+      color: #444;
+      margin-top: 16px;
+    }
+    .reference-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .reference-item {
+      position: relative;
+      padding-left: 12px;
+      margin-bottom: 4px;
+    }
+    .reference-item::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--primary-color);
+    }
+    .tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    .tag.success {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+    }
+    .tag.warning {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
+    }
+    .tag.error {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--error);
+    }
+    
+    /* 추천 항목 스타일 */
+    .recommendation-item {
+      background: #f0f9ff;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 14px;
+      border-left: 4px solid var(--primary-color);
+    }
+    .recommendation-title {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 8px;
+      color: var(--primary-color);
+    }
+    .recommendation-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    .recommendation-note {
+      font-size: 0.85rem;
+      color: #555;
+      margin-top: 5px;
+    }
+    
+    /* 애니메이션 */
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    select, .back-btn, .button {
+      transition: all 0.2s ease;
+    }
+    select:hover {
+      border-color: var(--primary-color);
+    }
+    .back-btn:active, .button:active {
+      transform: scale(0.98);
+    }
+    
+    /* 반응형 스타일 */
+    @media (min-width: 500px) {
+      .container {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        background: white;
+        min-height: auto;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        border-radius: 16px;
+      }
+      .header {
+        border-radius: 16px 16px 0 0;
+        position: relative;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <button class="back-btn" onclick="goBack()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 18L9 12L15 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <h1>케이블 계산기</h1>
+      <div style="width: 24px;"></div>
+    </div>
+
+    <div class="calculator">
+      <!-- 탭 메뉴 -->
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(0)">
+          <svg class="tab-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          케이블 선택
+          <div class="tab-indicator"></div>
+        </div>
+        <div class="tab" onclick="switchTab(1)">
+          <svg class="tab-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          전력/전류 입력
+          <div class="tab-indicator"></div>
+        </div>
+      </div>
+
+      <!-- 케이블 선택 탭 -->
+      <div class="tab-content active" id="tab-cable">
+        <div class="input-group">
+          <label class="input-label" for="cableType">전선 종류</label>
+          <div class="select-wrapper">
+            <select id="cableType">
+              <option value="CV">CV</option>
+              <option value="HFIX">HFIX</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="cableSize">전선 굵기 (㎟)</label>
+          <div class="select-wrapper">
+            <select id="cableSize"></select>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="installMethod">설치 방법</label>
+          <div class="select-wrapper">
+            <select id="installMethod">
+              <option value="공기">공기 중</option>
+              <option value="관">관내 배선</option>
+              <option value="지중">지중 매설(관 없음)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="voltageType">전원 종류</label>
+          <div class="select-wrapper">
+            <select id="voltageType">
+              <option value="단상">단상 220V</option>
+              <option value="삼상">삼상 380V</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="coreCount">Core 수</label>
+          <div class="select-wrapper">
+            <select id="coreCount">
+              <option value="1">1C</option>
+              <option value="2">2C</option>
+              <option value="3">3C</option>
+              <option value="4">4C</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="result-container fade-in">
+          <div class="result-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            계산 결과
+          </div>
+          <div class="result-content" id="result">
+            선택 정보를 바탕으로 결과가 표시됩니다.
+          </div>
+        </div>
+      </div>
+
+      <!-- 전력/전류 입력 탭 -->
+      <div class="tab-content" id="tab-power">
+        <div class="input-group">
+          <label class="input-label">계산 방식</label>
+          <div class="radio-group">
+            <label class="radio-button">
+              <input type="radio" name="calculationType" value="current" checked onchange="toggleCalcType()">
+              <span class="radio-label">전류 (A)</span>
+            </label>
+            <label class="radio-button">
+              <input type="radio" name="calculationType" value="power" onchange="toggleCalcType()">
+              <span class="radio-label">전력 (kW)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="input-group" id="currentInputGroup">
+          <label class="input-label" for="currentInput">전류 값</label>
+          <div class="input-field">
+            <input type="number" id="currentInput" placeholder="필요한 전류 입력">
+            <div class="unit">A</div>
+          </div>
+          <div class="input-field-label">설계 시 필요한 전류를 입력하세요.</div>
+        </div>
+
+        <div class="input-group" id="powerInputGroup" style="display:none;">
+          <label class="input-label" for="powerInput">전력 값</label>
+          <div class="input-field">
+            <input type="number" id="powerInput" placeholder="필요한 전력 입력">
+            <div class="unit">kW</div>
+          </div>
+          <div class="input-field-label">설계 시 필요한 전력을 입력하세요.</div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="powerVoltageType">전원 종류</label>
+          <div class="select-wrapper">
+            <select id="powerVoltageType">
+              <option value="단상">단상 220V</option>
+              <option value="삼상">삼상 380V</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="powerInstallMethod">설치 방법</label>
+          <div class="select-wrapper">
+            <select id="powerInstallMethod">
+              <option value="공기">공기 중</option>
+              <option value="관">관내 배선</option>
+              <option value="지중">지중 매설(관 없음)</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <label class="input-label" for="powerCoreCount">Core 수</label>
+          <div class="select-wrapper">
+            <select id="powerCoreCount">
+              <option value="1">1C</option>
+              <option value="2">2C</option>
+              <option value="3">3C</option>
+              <option value="4">4C</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <button class="button" onclick="calculateByPower()">계산하기</button>
+        </div>
+
+        <div class="result-container fade-in" id="powerResultContainer" style="display:none;">
+          <div class="result-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            추천 결과
+          </div>
+          <div class="result-content" id="powerResult">
+            전력 또는 전류를 입력하고 계산하기 버튼을 눌러주세요.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 페이지 이동 함수
+    function goBack() {
+      window.location.href = 'index.html';
+    }
+
+    // 케이블 데이터
+    const cableData = {
+      CV: {
+        "1.5": 18, "2.5": 24, "4": 32, "6": 41, "10": 57, "16": 76, "25": 101,
+        "35": 125, "50": 150, "70": 192, "95": 232, "120": 269, "150": 309,
+        "185": 353, "240": 415, "300": 472, "400": 545, "500": 614, "600": 690
+      },
+      HFIX: {
+        "1.5": 15, "2.5": 21, "4": 28, "6": 36, "10": 50, "16": 68, "25": 89,
+        "35": 112, "50": 138
+      }
+    };
+
+    // 보정 계수
+    const installFactor = { "공기": 1.0, "관": 0.87, "지중": 0.75 };
+    const coreFactor = { "1": 1.0, "2": 0.94, "3": 0.9, "4": 0.87 };
+    
+    // 차단기 및 접지선 크기
+    const breakerSizes = [15, 20, 30, 40, 50, 75, 100, 125, 150, 175, 200, 225, 250, 300];
+    const groundSizes = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400, 500, 600];
+
+    // 탭 전환 함수
+    function switchTab(tabIndex) {
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      tabs.forEach((tab, index) => {
+        if (index === tabIndex) {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
+      });
+      
+      tabContents.forEach((content, index) => {
+        if (index === tabIndex) {
+          content.classList.add('active');
+        } else {
+          content.classList.remove('active');
+        }
+      });
+    }
+
+    // 전력/전류 입력 토글 함수
+    function toggleCalcType() {
+      const calculationType = document.querySelector('input[name="calculationType"]:checked').value;
+      const currentInputGroup = document.getElementById('currentInputGroup');
+      const powerInputGroup = document.getElementById('powerInputGroup');
+      
+      if (calculationType === 'current') {
+        currentInputGroup.style.display = 'block';
+        powerInputGroup.style.display = 'none';
+      } else {
+        currentInputGroup.style.display = 'none';
+        powerInputGroup.style.display = 'block';
+      }
+    }
+
+    // 접지선 크기 계산 함수
+    function getGroundSize(sizeStr) {
+      const size = parseFloat(sizeStr);
+      let result;
+      if (size <= 16) result = size;
+      else if (size <= 35) result = 16;
+      else result = size / 2;
+      return `${groundSizes.find(s => s >= result)} ㎟`;
+    }
+
+    // 케이블 옵션 업데이트 함수
+    function updateCableOptions() {
+      const select = document.getElementById('cableSize');
+      select.innerHTML = "";
+      const type = document.getElementById('cableType').value;
+      let sizes = Object.keys(cableData[type]).map(Number).sort((a, b) => a - b);
+      if (type === 'HFIX') sizes = sizes.filter(size => size <= 50);
+
+      sizes.forEach(size => {
+        const option = document.createElement('option');
+        option.value = size;
+        option.textContent = `${size} ㎟`;
+        select.appendChild(option);
+      });
+      select.selectedIndex = 0;
+      updateResult();
+    }
+
+    // Core 옵션 업데이트 함수
+    function updateCoreOptions() {
+      const type = document.getElementById('cableType').value;
+      const coreSelect = document.getElementById('coreCount');
+      coreSelect.innerHTML = "";
+
+      const options = type === "HFIX"
+        ? [{value: "1", label: "1C"}]
+        : [
+            {value: "1", label: "1C"},
+            {value: "2", label: "2C"},
+            {value: "3", label: "3C"},
+            {value: "4", label: "4C"}
+          ];
+
+      options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt.value;
+        option.textContent = opt.label;
+        coreSelect.appendChild(option);
+      });
+    }
+
+    // 차단기 상태 태그 생성 함수
+    function getBreakerStatusTag(status) {
+      if (status === 'normal') {
+        return '<span class="tag success">최적</span>';
+      } else if (status === 'warning') {
+        return '<span class="tag warning">예외 추천</span>';
+      } else {
+        return '<span class="tag error">불가</span>';
+      }
+    }
+
+    // 케이블 선택 탭 결과 업데이트 함수
+    function updateResult() {
+      const type = document.getElementById('cableType').value;
+      const size = document.getElementById('cableSize').value;
+      const method = document.getElementById('installMethod').value;
+      const voltage = document.getElementById('voltageType').value;
+      const cores = document.getElementById('coreCount').value;
+
+      if (!size || !method || !cores || !voltage || !type) {
+        document.getElementById('result').innerHTML = `
+          <div style="padding: 20px; text-align: center;">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 10px; opacity: 0.5;">
+              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 8V12" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 16H12.01" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p style="color: #888; font-size: 0.9rem;">모든 항목을 선택하시면<br>계산 결과가 표시됩니다.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const baseCurrent = cableData[type][size];
+      const installCoef = installFactor[method];
+      const coreCoef = coreFactor[cores];
+      const correctedCurrent = Math.round(baseCurrent * installCoef * coreCoef * 10) / 10;
+
+      const minRange = Math.ceil(correctedCurrent);
+      const maxBreaker = Math.floor(correctedCurrent * 1.25);
+
+      let validBreakers = breakerSizes.filter(a => a >= correctedCurrent && a <= maxBreaker && a !== 65);
+      let breakerText;
+      let breakerStatus = 'normal';
+      
+      if (validBreakers.length > 0) {
+        breakerText = `${validBreakers.join(" / ")} A`;
+      } else {
+        const fallback = breakerSizes.filter(a => a <= maxBreaker && a !== 65).pop();
+        if (fallback) {
+          breakerText = `${fallback} A`;
+          breakerStatus = 'warning';
+        } else {
+          breakerText = `적정 차단기 없음`;
+          breakerStatus = 'error';
+        }
+      }
+
+      const voltageVal = voltage === "단상" ? 220 : 380;
+      const contractPower = voltage === "단상"
+        ? Math.round((voltageVal * correctedCurrent) / 1000)
+        : Math.round((Math.sqrt(3) * voltageVal * correctedCurrent) / 1000);
+
+      const groundSize = getGroundSize(size);
+
+      document.getElementById('result').innerHTML = `
+        <div class="result-row">
+          <div class="result-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 12H2" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M5.45 5.11L2 12V18C2 18.5304 2.21071 19.0391 2.58579 19.4142C2.96086 19.7893 3.46957 20 4 20H20C20.5304 20 21.0391 19.7893 21.4142 19.4142C21.7893 19.0391 22 18.5304 22 18V12L18.55 5.11C18.3844 4.77679 18.1292 4.49637 17.813 4.30028C17.4967 4.10419 17.1321 4.0002 16.76 4H7.24C6.86792 4.0002 6.50326 4.10419 6.18704 4.30028C5.87083 4.49637 5.61558 4.77679 5.45 5.11Z" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            선택한 케이블
+          </div>
+          <div class="result-value">
+            ${type} ${size} ㎟ (${cores}C) / ${method} / ${voltage}
+          </div>
+        </div>
+        
+        <div class="result-row">
+          <div class="result-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            최대 허용 전류
+          </div>
+          <div class="result-value highlight">
+            ${baseCurrent} A
+          </div>
+          <div class="result-note">
+            기준: KEC 2021 표 3.2.1
+          </div>
+        </div>
+        
+        <div class="result-row">
+          <div class="result-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 13V19C18 19.5304 17.7893 20.0391 17.4142 20.4142C17.0391 20.7893 16.5304 21 16 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V8C3 7.46957 3.21071 6.96086 3.58579 6.58579C3.96086 6.21071 4.46957 6 5 6H11" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M15 3H21V9" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10 14L21 3" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            보정 후 허용 전류
+          </div>
+          <div class="result-value highlight">
+            ${correctedCurrent} A
+          </div>
+          <div class="result-note">
+            ${baseCurrent} × ${installCoef}(${method}) × ${coreCoef}(${cores}C) = ${correctedCurrent} A
+          </div>
+        </div>
+        
+        <div class="result-row">
+          <div class="result-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="11" width="18" height="11" rx="2" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="7" y="11" width="4" height="8" rx="1" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="15" y="11" width="4" height="8" rx="1" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M7 4L12 2L17 4" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 2V11" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            추천 차단기 ${getBreakerStatusTag(breakerStatus)}
+          </div>
+          <div class="result-value ${breakerStatus === 'error' ? 'error' : 'highlight'}">
+            ${breakerText}
+          </div>
+          <div class="result-note">
+            추천 전류 범위: ${minRange}A ~ ${maxBreaker}A (보정후 허용전류 기준)
+          </div>
+        </div>
+        
+        <div class="result-row">
+          <div class="result-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18.36 6.64C19.6184 7.89879 20.4753 9.50244 20.8223 11.2482C21.1693 12.9939 20.9909 14.8034 20.3096 16.4478C19.6284 18.0921 18.4748 19.4976 16.9948 20.4864C15.5148 21.4752 13.7749 22.0029 11.995 22.0029C10.2151 22.0029 8.47515 21.4752 6.99517 20.4864C5.51519 19.4976 4.36164 18.0921 3.68036 16.4478C2.99909 14.8034 2.82069 12.9939 3.16772 11.2482C3.51475 9.50244 4.37162 7.89879 5.63 6.64" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 2V12" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            가능 용량
+          </div>
+          <div class="result-value highlight">
+            ${contractPower} kW
+          </div>
+          <div class="result-note">
+            ${
+              voltage === "단상"
+                ? `220V × ${correctedCurrent}A = ${Math.round(220 * correctedCurrent)}W`
+                : `√3 × 380V × ${correctedCurrent}A = ${Math.round(Math.sqrt(3) * 380 * correctedCurrent)}W`
+            }
+          </div>
+        </div>
+        
+        <div class="result-row">
+          <div class="result-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 2L12 12" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            접지선 굵기
+          </div>
+          <div class="result-value highlight">
+            ${groundSize}
+          </div>
+          <div class="result-note">
+            기준: 16㎟ 이하 동일, 16~35㎟는 16㎟, 35㎟ 초과는 1/2
+          </div>
+        </div>
+        
+        <div class="reference">
+          <div class="reference-title">KEC 기준 참고</div>
+          <div class="reference-item">허용 전류: KEC 2021 표 3.2.1 기준</div>
+          <div class="reference-item">접지선 산정: 16㎟ 이하 동일, 16~35㎟는 16㎟, 35㎟ 초과는 1/2</div>
+          <div class="reference-item">차단기: 전선 기준 허용 전류의 125% 이하</div>
+        </div>
+      `;
+    }
+
+    // 전력/전류로 케이블 추천 함수
+    function calculateByPower() {
+      const powerResultContainer = document.getElementById('powerResultContainer');
+      powerResultContainer.style.display = 'block';
+      
+      // 입력값 가져오기
+      const calculationType = document.querySelector('input[name="calculationType"]:checked').value;
+      const voltage = document.getElementById('powerVoltageType').value;
+      const method = document.getElementById('powerInstallMethod').value;
+      const cores = document.getElementById('powerCoreCount').value;
+      
+      let current;
+      // 전류 또는 전력에 따라 계산
+      if (calculationType === 'current') {
+        current = parseFloat(document.getElementById('currentInput').value);
+        if (!current || current <= 0) {
+          document.getElementById('powerResult').innerHTML = '유효한 전류 값을 입력해주세요.';
+          return;
+        }
+      } else {
+        const power = parseFloat(document.getElementById('powerInput').value);
+        if (!power || power <= 0) {
+          document.getElementById('powerResult').innerHTML = '유효한 전력 값을 입력해주세요.';
+          return;
+        }
+        
+        // 전력을 전류로 변환
+        const voltageVal = voltage === "단상" ? 220 : 380;
+        if (voltage === "단상") {
+          current = (power * 1000) / voltageVal;
+        } else {
+          current = (power * 1000) / (Math.sqrt(3) * voltageVal);
+        }
+      }
+      
+      // 필요한 전류에 보정 계수 적용하여 역산
+      const installCoef = installFactor[method];
+      const coreCoef = coreFactor[cores];
+      const requiredBaseCurrent = current / (installCoef * coreCoef);
+      
+      // 적합한 케이블 찾기 (CV, HFIX 두 타입에 대해 각각 계산)
+      const recommendations = {
+        CV: findSuitableCable('CV', requiredBaseCurrent),
+        HFIX: findSuitableCable('HFIX', requiredBaseCurrent)
+      };
+      
+      // 추천 브레이커 계산
+      const minBreakerSize = Math.ceil(current);
+      const maxBreakerSize = Math.floor(current * 1.25);
+      const recommendedBreakers = breakerSizes.filter(
+        size => size >= minBreakerSize && size <= maxBreakerSize && size !== 65
+      );
+      
+      let breakerText;
+      let breakerStatus = 'normal';
+      
+      if (recommendedBreakers.length > 0) {
+        breakerText = `${recommendedBreakers.join(" / ")} A`;
+      } else {
+        const fallback = breakerSizes.filter(size => size <= maxBreakerSize && size !== 65).pop();
+        if (fallback) {
+          breakerText = `${fallback} A`;
+          breakerStatus = 'warning';
+        } else {
+          breakerText = '적정 차단기 없음';
+          breakerStatus = 'error';
+        }
+      }
+      
+      // 결과 표시
+      document.getElementById('powerResult').innerHTML = `
+        <div class="result-row">
+          <div class="result-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            필요 전류
+          </div>
+          <div class="result-value highlight">
+            ${Math.round(current * 10) / 10} A
+          </div>
+          <div class="result-note">
+            ${calculationType === 'power' ? `${document.getElementById('powerInput').value} kW에 해당하는 전류` : '입력한 전류'}
+          </div>
+        </div>
+        
+        <div class="recommendation-item">
+          <div class="recommendation-title">추천 CV 케이블</div>
+          <div class="recommendation-value">${recommendations.CV.size} ㎟ (${cores}C)</div>
+          <div class="recommendation-note">
+            최대 허용 전류: ${recommendations.CV.current}A
+            (보정 후: ${Math.round(recommendations.CV.current * installCoef * coreCoef * 10) / 10}A)
+          </div>
+        </div>
+        
+        <div class="recommendation-item">
+          <div class="recommendation-title">추천 HFIX 케이블</div>
+          <div class="recommendation-value">${recommendations.HFIX.size} ㎟ (${cores}C)</div>
+          <div class="recommendation-note">
+            최대 허용 전류: ${recommendations.HFIX.current}A
+            (보정 후: ${Math.round(recommendations.HFIX.current * installCoef * coreCoef * 10) / 10}A)
+          </div>
+        </div>
+        
+        <div class="recommendation-item">
+          <div class="recommendation-title">추천 차단기 ${getBreakerStatusTag(breakerStatus)}</div>
+          <div class="recommendation-value">${breakerText}</div>
+          <div class="recommendation-note">
+            추천 전류 범위: ${minBreakerSize}A ~ ${maxBreakerSize}A (허용전류 기준)
+          </div>
+        </div>
+        
+        <div class="recommendation-item">
+          <div class="recommendation-title">추천 접지선 굵기</div>
+          <div class="recommendation-value">
+            CV: ${getGroundSize(recommendations.CV.size)}<br>
+            HFIX: ${getGroundSize(recommendations.HFIX.size)}
+          </div>
+        </div>
+        
+        <div class="reference">
+          <div class="reference-title">참고사항</div>
+          <div class="reference-item">케이블 선택 시 열악한 환경이나 여유율을 고려해 한 단계 상향할 수 있습니다.</div>
+          <div class="reference-item">정격 전류는 KEC 2021 표준에 따라 산정되었습니다.</div>
+        </div>
+      `;
+    }
+    
+    // 적합한 케이블 찾기 함수
+    function findSuitableCable(type, requiredCurrent) {
+      const sizes = Object.keys(cableData[type]).map(Number).sort((a, b) => a - b);
+      
+      // 요구전류 이상을 만족하는 가장 작은 케이블 찾기
+      for (let i = 0; i < sizes.length; i++) {
+        const size = sizes[i];
+        const current = cableData[type][size];
+        
+        if (current >= requiredCurrent) {
+          return { size: size, current: current };
+        }
+      }
+      
+      // 모든 케이블이 요구전류를 만족하지 못하면 최대 케이블 반환
+      const maxSize = Math.max(...sizes);
+      return { size: maxSize, current: cableData[type][maxSize] };
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateCableOptions();
+      updateCoreOptions();
+      document.querySelectorAll('select').forEach(select => {
+        select.addEventListener('change', () => {
+          if (select.id === 'cableType') {
+            updateCableOptions();
+            updateCoreOptions();
+          } else {
+            updateResult();
+          }
+          
+          // 선택시 애니메이션 효과 추가
+          const resultContainer = document.querySelector('.result-container');
+          resultContainer.style.opacity = '0';
+          resultContainer.style.transform = 'translateY(5px)';
+          
+          setTimeout(() => {
+            resultContainer.style.opacity = '1';
+            resultContainer.style.transform = 'translateY(0)';
+            resultContainer.style.transition = 'all 0.3s ease-in-out';
+          }, 100);
+        });
+      });
+      
+      // 전력/전류 입력 필드에 Enter 키 이벤트 추가
+      document.getElementById('currentInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          calculateByPower();
+        }
+      });
+      
+      document.getElementById('powerInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          calculateByPower();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
